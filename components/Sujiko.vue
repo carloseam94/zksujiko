@@ -2,17 +2,24 @@
   <div>
     <script src="snarkjs.min.js"></script>
     <div id="graph" class="flex item-center justify-center h-full"></div>
+    <button class="btn btn-primary" @click="verify">Verify</button>
   </div>
 </template>
 <script>
 import { sujikoCalldata } from "../zkutils/snarkjs_sujiko.js";
 const vis = require("vis-network/dist/vis-network.js");
+
 export default {
   data() {
     return {
+      board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      fixed: [],
+      circles: [0, 0, 0, 0],
       network: null,
+      nodes: null,
+      edges: null,
       circuit_wasm: null,
-      circuit_key: null
+      circuit_key: null,
     };
   },
   methods: {
@@ -20,12 +27,36 @@ export default {
       this.circuit_wasm = await fetch("/circuit.wasm");
       this.circuit_key = await fetch("/circuit_0001.zkey");
     },
+    verify() {
+      let solution = this.getBoard();
+      console.log(this.board);
+      console.log(solution);
+      console.log(this.fixed);
+      console.log(this.circles);
+    },
+    getBoard() {
+      return this.nodes
+        .get()
+        .filter((x) => {
+          return x.id >= 1 && x.id <= 9;
+        })
+        .map((x) => {
+          return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
+        });
+    },
+    loadNewBoard() {
+      this.board = [0, 0, 0, 0, 0, 0, 8, 0, 7];
+      this.circles = [10, 21, 18, 20];
+      this.board.map((x, index) => {
+        if (x != 0) this.fixed.push(index + 1);
+      });
+    },
     createNetwork() {
       // create an array with nodes
-      var nodes = new vis.DataSet([
+      this.nodes = new vis.DataSet([
         {
           id: 1,
-          label: "1",
+          label: this.board[0] != 0 ? this.board[0].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -34,7 +65,7 @@ export default {
         },
         {
           id: 2,
-          label: "2",
+          label: this.board[1] != 0 ? this.board[1].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -43,7 +74,7 @@ export default {
         },
         {
           id: 3,
-          label: "3",
+          label: this.board[2] != 0 ? this.board[2].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -52,7 +83,7 @@ export default {
         },
         {
           id: 4,
-          label: "4",
+          label: this.board[3] != 0 ? this.board[3].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -61,7 +92,7 @@ export default {
         },
         {
           id: 5,
-          label: "5",
+          label: this.board[4] != 0 ? this.board[4].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -70,7 +101,7 @@ export default {
         },
         {
           id: 6,
-          label: "6",
+          label: this.board[5] != 0 ? this.board[5].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -79,7 +110,7 @@ export default {
         },
         {
           id: 7,
-          label: "7",
+          label: this.board[6] != 0 ? this.board[6].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -88,7 +119,7 @@ export default {
         },
         {
           id: 8,
-          label: "8",
+          label: this.board[7] != 0 ? this.board[7].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -97,7 +128,7 @@ export default {
         },
         {
           id: 9,
-          label: "9",
+          label: this.board[8] != 0 ? this.board[8].toString() : " ",
           shape: "box",
           widthConstraint: 20,
           color: "#d8d2d2",
@@ -106,7 +137,7 @@ export default {
         },
         {
           id: 10,
-          label: "10",
+          label: this.circles[0] != 0 ? this.circles[0].toString() : " ",
           shape: "circle",
           widthConstraint: 30,
           x: -50,
@@ -114,7 +145,7 @@ export default {
         },
         {
           id: 11,
-          label: "11",
+          label: this.circles[1] != 0 ? this.circles[1].toString() : " ",
           shape: "circle",
           widthConstraint: 30,
           x: 50,
@@ -122,7 +153,7 @@ export default {
         },
         {
           id: 12,
-          label: "12",
+          label: this.circles[2] != 0 ? this.circles[2].toString() : " ",
           shape: "circle",
           widthConstraint: 30,
           x: -50,
@@ -130,7 +161,7 @@ export default {
         },
         {
           id: 13,
-          label: "13",
+          label: this.circles[3] != 0 ? this.circles[3].toString() : " ",
           shape: "circle",
           widthConstraint: 30,
           x: 50,
@@ -139,7 +170,7 @@ export default {
       ]);
 
       // create an array with edges
-      var edges = new vis.DataSet([
+      this.edges = new vis.DataSet([
         { from: 1, to: 10 },
         { from: 2, to: 10 },
         { from: 4, to: 10 },
@@ -161,8 +192,8 @@ export default {
       // create a network
       var container = document.getElementById("graph");
       var data = {
-        nodes: nodes,
-        edges: edges,
+        nodes: this.nodes,
+        edges: this.edges,
       };
       var options = {
         height: "600px",
@@ -179,35 +210,40 @@ export default {
         },
         interaction: {
           navigationButtons: true,
-          // zoomView: false,
-          // dragView: false,
         },
       };
       this.network = new vis.Network(container, data, options);
 
       setTimeout(() => {
-        this.network.moveTo({scale: 2});
+        this.network.moveTo({ scale: 2 });
       }, 0);
 
-      // network.on("click", function (params) {
+      // this.network.on("click", function (params) {
       //   var nodeID = this.getNodeAt(params.pointer.DOM)
-      //   if(nodeID !== undefined) {
+      //   if(nodeID !== undefined && nodeID >= 1 && nodeID <= 9) {
       //     var clickedNode = nodes.get(nodeID);
-      //     clickedNode.color = {
-      //       border: '#ef4444',
-      //       background: '#ef4444',
-      //       highlight: {
-      //         border: '#ef4444',
-      //         background: '#ef4444'
-      //       }
-      //     }
+      //     clickedNode.label = '4';
       //     nodes.update(clickedNode);
       //   }
       // });
+
+      document.getElementById("graph").onkeydown = (event) => {
+        var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
+        if (
+          selectedNode !== undefined &&
+          selectedNode.id <= 9 &&
+          !this.fixed.includes(selectedNode.id) &&
+          /^[1-9]$/i.test(event.key)
+        ) {
+          selectedNode.label = event.key.toString();
+          this.nodes.update(selectedNode);
+        }
+      };
     },
   },
   mounted() {
     this.loadCircuit();
+    this.loadNewBoard();
     this.createNetwork();
   },
 };

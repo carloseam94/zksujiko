@@ -21,7 +21,9 @@ export default {
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
-    '@/node_modules/vis-network/styles/vis-network.css'
+    '@/node_modules/vis-network/styles/vis-network.css',
+    '@/node_modules/bootstrap/dist/css/bootstrap.css',
+    '@/node_modules/bootstrap-vue/dist/bootstrap-vue.css'
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
