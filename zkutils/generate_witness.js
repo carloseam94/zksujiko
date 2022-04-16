@@ -1,4 +1,4 @@
-const wc  = require("./generate_witness.js");
+const wc  = require("./witness_calculator.js");
 
 module.exports.generateWitness = async function (input) {
 	const response = await fetch('/circuit.wasm');
@@ -6,6 +6,7 @@ module.exports.generateWitness = async function (input) {
 	let buff;
 	await wc(buffer).then(async witnessCalculator => {
 		buff = await witnessCalculator.calculateWTNSBin(input, 0);
+		console.log(buff)
 	});
 	return buff;
 }

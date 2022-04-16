@@ -37,6 +37,15 @@ module.exports = async function builder(code, options) {
 
     const sanityCheck =
         options
+//        options &&
+//        (
+//            options.sanityCheck ||
+//            options.logGetSignal ||
+//            options.logSetSignal ||
+//            options.logStartComponent ||
+//            options.logFinishComponent
+//        );
+
     
     wc = new WitnessCalculator(instance, sanityCheck);
     return wc;

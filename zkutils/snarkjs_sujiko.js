@@ -23,7 +23,7 @@ function unstringifyBigInts(o) {
 export async function sujikoCalldata(board, circles, solution) {
   const input = {
     board: board,
-    circes: circles,
+    circles: circles,
     solution: solution
   };
 
@@ -32,6 +32,7 @@ export async function sujikoCalldata(board, circles, solution) {
   let witness = await generateWitness(input)
     .then()
     .catch((error) => {
+      console.log(error)
       generateWitnessSuccess = false;
       alert("Wrong solution");
     });
@@ -40,14 +41,14 @@ export async function sujikoCalldata(board, circles, solution) {
     return;
   }
 
-  const { proof, publicSignals } = await windows.snarks.groth16.prove(
+  const { proof, publicSignals } = await window.snarkjs.groth16.prove(
     "/circuit_0001.zkey",
     witness
   );
 
   const editedPublicSignals = unstringifyBigInts(publicSignals);
   const editedProof = unstringifyBigInts(proof);
-  const calldata = await  windows.snarks.groth16.exportSolidityCallData(
+  const calldata = await  window.snarkjs.groth16.exportSolidityCallData(
     editedProof,
     editedPublicSignals
   );

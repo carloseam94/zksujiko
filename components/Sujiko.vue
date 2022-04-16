@@ -1,11 +1,32 @@
 <template>
   <div>
     <script src="snarkjs.min.js"></script>
-    <div id="graph" class="flex item-center justify-center h-full"></div>
-    <button class="btn btn-primary" @click="verify">Verify</button>
+    <div class="container">
+      <div class="row mb-2">
+        <div class="col">
+          <div id="graph" class="flex item-center justify-center h-full"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <button
+            class="btn btn-primary"
+            :disabled="walletConnected"
+            @click="connectWallet"
+          >
+            Connect Wallet
+          </button>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary" @click="verify">Verify</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
+import { ethers } from "ethers";
+import Sujiko from "../utils/Sujiko.json";
 import { sujikoCalldata } from "../zkutils/snarkjs_sujiko.js";
 const vis = require("vis-network/dist/vis-network.js");
 
@@ -20,19 +41,149 @@ export default {
       edges: null,
       circuit_wasm: null,
       circuit_key: null,
+      walletConnected: false,
+      account: "",
+      CONTRACT_ADDRESS: "0x55ad7dB2860291C7271C8b8929d82322Ff0F71f0",
     };
   },
   methods: {
-    async loadCircuit() {
-      this.circuit_wasm = await fetch("/circuit.wasm");
-      this.circuit_key = await fetch("/circuit_0001.zkey");
+    async checkIfWalletIsConnected() {
+      /*
+       * First make sure we have access to window.ethereum
+       */
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        console.log("Make sure you have metamask!");
+        return;
+      } else {
+        console.log("We have the ethereum object", ethereum);
+      }
+
+      /*
+       * Check if we're authorized to access the user's wallet
+       */
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+
+      /*
+       * User can have multiple authorized accounts, we grab the first one if its there!
+       */
+      if (accounts.length !== 0) {
+        this.account = accounts[0];
+        this.walletConnected = true;
+        this.setupEventListener();
+        console.log("Found an authorized account:", this.account);
+      } else {
+        console.log("No authorized account found");
+      }
     },
-    verify() {
-      let solution = this.getBoard();
-      console.log(this.board);
-      console.log(solution);
-      console.log(this.fixed);
-      console.log(this.circles);
+    async connectWallet() {
+      try {
+        const { ethereum } = window;
+
+        if (!ethereum) {
+          alert("Get MetaMask!");
+          return;
+        }
+
+        /*
+         * Fancy method to request access to account.
+         */
+        const accounts = await ethereum.request({
+          method: "eth_requestAccounts",
+        });
+
+        /*
+         * Boom! This should print out public address once we authorize Metamask.
+         */
+        console.log("Connected", accounts[0]);
+        this.account = accounts[0];
+        this.walletConnected = true;
+        this.setupEventListener();
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async setupEventListener() {
+      // Most of this looks the same as our function askContractToMintNft
+      try {
+        const { ethereum } = window;
+
+        if (ethereum) {
+          // Same stuff again
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const connectedContract = new ethers.Contract(
+            this.CONTRACT_ADDRESS,
+            Sujiko.abi,
+            signer
+          );
+
+          connectedContract.on("NewNFTMinted", (from, tokenId) => {
+            this.mintingNFT = false;
+            console.log(from, tokenId.toNumber());
+            alert(
+              `NFT minted: see transaction here https://mumbai.polygonscan.com/address/${
+                this.CONTRACT_ADDRESS
+              } or see NFT here https://testnets.opensea.io/assets/mumbai/${
+                this.CONTRACT_ADDRESS
+              }/${tokenId.toNumber()}`
+            );
+          });
+
+          console.log("Setup event listener!");
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async verify() {
+      // let solution = this.getBoard();
+      // console.log(this.board);
+      // console.log(solution);
+      // console.log(this.fixed);
+      // console.log(this.circles);
+
+      let calldata = await sujikoCalldata(
+        this.board,
+        this.circles,
+        this.getBoard()
+      );
+
+      if (!calldata) {
+        return "Invalid inputs to generate witness.";
+      }
+
+      console.log("calldata", calldata);
+
+      try {
+        const { ethereum } = window;
+
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const connectedContract = new ethers.Contract(
+            this.CONTRACT_ADDRESS,
+            Sujiko.abi,
+            signer
+          );
+
+          let response = await connectedContract.verifySujiko(
+            calldata[0],
+            calldata[1],
+            calldata[2],
+            calldata[3]
+          );
+
+          console.log(response);
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
     getBoard() {
       return this.nodes
@@ -44,12 +195,34 @@ export default {
           return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
         });
     },
-    loadNewBoard() {
-      this.board = [0, 0, 0, 0, 0, 0, 8, 0, 7];
-      this.circles = [10, 21, 18, 20];
-      this.board.map((x, index) => {
-        if (x != 0) this.fixed.push(index + 1);
-      });
+    async loadNewBoard() {
+      try {
+        const { ethereum } = window;
+
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const connectedContract = new ethers.Contract(
+            this.CONTRACT_ADDRESS,
+            Sujiko.abi,
+            signer
+          );
+
+          let response = await connectedContract.getNewBoard();
+          this.board = response[0];
+          this.circles = response[1];
+          this.fixed = [];
+          this.board.map((x, index) => {
+            if (x != 0) this.fixed.push(index + 1);
+          });
+
+          this.createNetwork();
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
     createNetwork() {
       // create an array with nodes
@@ -242,9 +415,9 @@ export default {
     },
   },
   mounted() {
-    this.loadCircuit();
+    this.checkIfWalletIsConnected();
     this.loadNewBoard();
-    this.createNetwork();
+    
   },
 };
 </script>
