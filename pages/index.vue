@@ -1,5 +1,9 @@
 <template>
+<main>
+  <Header/>
   <Sujiko/>
+  <Footer/>
+</main>
 </template>
 
 <script>

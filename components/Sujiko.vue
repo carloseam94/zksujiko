@@ -1,27 +1,53 @@
 <template>
-  <div>
+  <div id="sujiko-section">
     <script src="snarkjs.min.js"></script>
-    <div class="container">
-      <div class="row mb-2">
-        <div class="col">
-          <div id="graph" class="flex item-center justify-center h-full"></div>
+    <b-overlay :show="show_overlay" rounded="sm">
+      <div class="container pb-1" :aria-hidden="show_overlay ? 'true' : null">
+        <div class="row mb-2">
+          <div class="col">
+            <div
+              id="graph"
+              class="flex item-center justify-center h-full mt-4"
+            ></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <b-button variant="primary" size="sm" @click="clearBoard">Clear Board</b-button>
+            <b-button variant="primary" size="sm" @click="loadNewBoard">Load Board</b-button>
+          </div>
+          <div class="col text-center">
+            <b-button-group>
+              <b-button @click="insertNumber(' ')">del</b-button>
+              <b-button @click="insertNumber(1)">1</b-button>
+              <b-button @click="insertNumber(2)">2</b-button>
+              <b-button @click="insertNumber(3)">3</b-button>
+              <b-button @click="insertNumber(4)">4</b-button>
+              <b-button @click="insertNumber(5)">5</b-button>
+              <b-button @click="insertNumber(6)">6</b-button>
+              <b-button @click="insertNumber(7)">7</b-button>
+              <b-button @click="insertNumber(8)">8</b-button>
+              <b-button @click="insertNumber(9)">9</b-button>
+            </b-button-group>
+          </div>
+          <div class="col text-right">
+            <b-button variant="primary" size="sm" @click="contribute" :disabled="contributing">Contribute</b-button>
+            <b-button variant="primary" size="sm" @click="contributing ? submitContribution() : verify()">{{ contributing ? "Submit" : "Verify" }}</b-button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <b-button
+              variant="primary"
+              v-if="!walletConnected"
+              @click="connectWallet"
+            >
+              Connect Wallet
+            </b-button>
+          </div>
         </div>
       </div>
-      <div class="row">
-        <div class="col">
-          <button
-            class="btn btn-primary"
-            :disabled="walletConnected"
-            @click="connectWallet"
-          >
-            Connect Wallet
-          </button>
-        </div>
-        <div class="col">
-          <button class="btn btn-primary" @click="verify">Verify</button>
-        </div>
-      </div>
-    </div>
+    </b-overlay>
   </div>
 </template>
 <script>
@@ -33,9 +59,9 @@ const vis = require("vis-network/dist/vis-network.js");
 export default {
   data() {
     return {
-      board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      fixed: [],
-      circles: [0, 0, 0, 0],
+      board: null,
+      fixed: null,
+      circles: null,
       network: null,
       nodes: null,
       edges: null,
@@ -44,6 +70,8 @@ export default {
       walletConnected: false,
       account: "",
       CONTRACT_ADDRESS: "0x55ad7dB2860291C7271C8b8929d82322Ff0F71f0",
+      show_overlay: true,
+      contributing: false
     };
   },
   methods: {
@@ -140,12 +168,7 @@ export default {
       }
     },
     async verify() {
-      // let solution = this.getBoard();
-      // console.log(this.board);
-      // console.log(solution);
-      // console.log(this.fixed);
-      // console.log(this.circles);
-
+      this.show_overlay = true;
       let calldata = await sujikoCalldata(
         this.board,
         this.circles,
@@ -153,10 +176,9 @@ export default {
       );
 
       if (!calldata) {
-        return "Invalid inputs to generate witness.";
+        this.wrongAnswer();
+        return;
       }
-
-      console.log("calldata", calldata);
 
       try {
         const { ethereum } = window;
@@ -176,14 +198,31 @@ export default {
             calldata[2],
             calldata[3]
           );
-
-          console.log(response);
+          
+          if(response) {
+            this.correctAnswer();
+          }
+          else {
+            this.wrongAnswer();
+          }
+          
         } else {
-          console.log("Ethereum object doesn't exist!");
+          this.wrongAnswer();
         }
       } catch (error) {
-        console.log(error);
+       this.wrongAnswer();
       }
+    },
+    contribute() {
+      this.contributing = true;
+      this.clearBoard();
+      this.board = [0,0,0,0,0,0,0,0,0];
+      this.circles = [0,0,0,0];
+      this.fixes = [];
+      this.createNetwork();
+    },
+    async submitContribution() {
+
     },
     getBoard() {
       return this.nodes
@@ -195,7 +234,78 @@ export default {
           return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
         });
     },
+    getNetWorkOptions() {
+      return {
+        height: "600px",
+        // width: '600px',
+        nodes: {
+          font: "20px arial black",
+          fixed: {
+            x: true,
+            y: true,
+          },
+        },
+        edges: {
+          color: "#4b5563",
+        },
+        interaction: {
+          navigationButtons: true,
+        },
+        manipulation: {
+          enabled: true,
+          addNode: function (nodeData, callback) {
+            nodeData.label = " ";
+            var r = confirm("Do you want a Square?");
+            if (r === true) {
+              nodeData.shape = "box";
+              nodeData.widthConstraint = 20;
+              nodeData.color = "#d8d2d2";
+            } else {
+              nodeData.shape = "circle";
+              nodeData.widthConstraint = 30;
+              nodeData.color = "#7eb4ef";
+            }
+            callback(nodeData);
+          },
+          editNode: function (nodeData, callback) {
+            console.log(nodeData);
+            if (nodeData.shape == "box") {
+              nodeData.shape = "circle";
+              nodeData.widthConstraint = 30;
+              nodeData.color = "#7eb4ef";
+            } else {
+              nodeData.shape = "box";
+              nodeData.widthConstraint = 20;
+              nodeData.color = "#d8d2d2";
+            }
+            callback(nodeData);
+          },
+        },
+      };
+    },
+    clearBoard() {
+      this.board = null;
+      this.circles = null;
+      this.fixed = null;
+      this.network.destroy();
+
+      this.nodes =  this.nodes = new vis.DataSet([]);
+      this.edges =  this.edges = new vis.DataSet([]);
+     
+      var container = document.getElementById("graph");
+      var data = {
+        nodes: this.nodes,
+        edges: this.edges,
+      };
+      var options = this.getNetWorkOptions();
+      this.network = new vis.Network(container, data, options);
+
+      setTimeout(() => {
+        this.network.moveTo({ scale: 2 });
+      }, 0);
+    },
     async loadNewBoard() {
+      this.contributing = false;
       try {
         const { ethereum } = window;
 
@@ -368,62 +478,64 @@ export default {
         nodes: this.nodes,
         edges: this.edges,
       };
-      var options = {
-        height: "600px",
-        // width: '600px',
-        nodes: {
-          font: "20px arial black",
-          fixed: {
-            x: true,
-            y: true,
-          },
-        },
-        edges: {
-          color: "#4b5563",
-        },
-        interaction: {
-          navigationButtons: true,
-        },
-      };
+      var options = this.getNetWorkOptions();
       this.network = new vis.Network(container, data, options);
 
       setTimeout(() => {
         this.network.moveTo({ scale: 2 });
       }, 0);
 
-      // this.network.on("click", function (params) {
-      //   var nodeID = this.getNodeAt(params.pointer.DOM)
-      //   if(nodeID !== undefined && nodeID >= 1 && nodeID <= 9) {
-      //     var clickedNode = nodes.get(nodeID);
-      //     clickedNode.label = '4';
-      //     nodes.update(clickedNode);
-      //   }
-      // });
-
       document.getElementById("graph").onkeydown = (event) => {
-        var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
-        if (
-          selectedNode !== undefined &&
-          selectedNode.id <= 9 &&
-          !this.fixed.includes(selectedNode.id) &&
-          /^[1-9]$/i.test(event.key)
-        ) {
-          selectedNode.label = event.key.toString();
-          this.nodes.update(selectedNode);
+        if (/^[1-9]$/i.test(event.key)) {
+          this.insertNumber(event.key.toString());
         }
       };
+    },
+    insertNumber(number) {
+      var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
+      if (
+        selectedNode !== undefined &&
+        selectedNode.id <= 9 &&
+        !this.fixed.includes(selectedNode.id)
+      ) {
+        selectedNode.label = number.toString();
+        this.nodes.update(selectedNode);
+      }
+    },
+    wrongAnswer() {
+      this.makeToast('Wrong Answer', 'Nice try, you are almost there!', 'danger');
+      this.show_overlay = false;
+    },
+    correctAnswer() {
+      this.makeToast('Correct Answer', 'Hey you are good at this!', 'success');
+      this.show_overlay = false;
+    },
+    makeToast(title, text, variant = null) {
+      this.$bvToast.toast(text, {
+        toaster: 'b-toaster-top-center',
+        title: title,
+        variant: variant,
+        solid: true,
+        appendToast: true
+      });
     },
   },
   mounted() {
     this.checkIfWalletIsConnected();
     this.loadNewBoard();
-    
+    this.show_overlay = false;
   },
 };
 </script>
 <style>
-#graph > .vis-network {
+#graph {
+  min-height: 600px;
   border: 1px dashed black;
+}
+#graph > .vis-network {
   outline: none;
+}
+#sujiko-section {
+  min-height: 100vh;
 }
 </style>

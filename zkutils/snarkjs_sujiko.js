@@ -32,9 +32,8 @@ export async function sujikoCalldata(board, circles, solution) {
   let witness = await generateWitness(input)
     .then()
     .catch((error) => {
-      console.log(error)
+      console.log(error);
       generateWitnessSuccess = false;
-      alert("Wrong solution");
     });
 
   if (!generateWitnessSuccess) {
