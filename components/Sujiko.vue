@@ -13,8 +13,9 @@
         </div>
         <div class="row">
           <div class="col">
-            <b-button variant="primary" size="sm" @click="clearBoard">Clear Board</b-button>
-            <b-button variant="primary" size="sm" @click="loadNewBoard">Load Board</b-button>
+            <b-button variant="primary" size="sm" @click="loadPreviousBoard" title="Previous Board"><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon></b-button>
+            <b-button variant="primary" size="sm" @click="clearBoard" title="Clear Board"><b-icon icon="trash" aria-label="trash"></b-icon></b-button>
+            <b-button variant="primary" size="sm" @click="loadNextBoard" title="Next Board"><b-icon icon="arrow-right" aria-label="arrow-right"></b-icon></b-button>
           </div>
           <div class="col text-center">
             <b-button-group>
@@ -70,9 +71,11 @@ export default {
       circuit_key: null,
       walletConnected: false,
       account: "",
-      CONTRACT_ADDRESS: "0x966797a56832DC75491fb63326F7a3CB272cCdA6",
+      CONTRACT_ADDRESS: "0xAc76C96E266249C85406CFC8118eCa3f56a92855",
       show_overlay: true,
-      contributing: false
+      contributing: false,
+      board_index: 0,
+      board_limit: 1
     };
   },
   methods: {
@@ -115,19 +118,15 @@ export default {
           return;
         }
 
-        /*
-         * Fancy method to request access to account.
-         */
         const accounts = await ethereum.request({
           method: "eth_requestAccounts",
         });
 
-        /*
-         * Boom! This should print out public address once we authorize Metamask.
-         */
         console.log("Connected", accounts[0]);
         this.account = accounts[0];
         this.walletConnected = true;
+        this.loadNewBoard(0);
+        this.show_overlay = false;
         this.setupEventListener();
       } catch (error) {
         console.log(error);
@@ -199,14 +198,14 @@ export default {
             calldata[2],
             calldata[3]
           );
-          
+
           if(response) {
             this.correctAnswer();
           }
           else {
             this.wrongAnswer();
           }
-          
+
         } else {
           this.wrongAnswer();
         }
@@ -226,7 +225,7 @@ export default {
       this.show_overlay = true;
       let calldata = await sujikoCalldata(
         this.board,
-        this.circles,
+        this.getCircles(),
         this.getBoard()
       );
 
@@ -253,14 +252,14 @@ export default {
             calldata[2],
             calldata[3]
           );
-          
+
           if(response) {
             this.successfullContribution();
           }
           else {
             this.invalidContribution();
           }
-          
+
         } else {
           this.invalidContribution();
         }
@@ -276,6 +275,16 @@ export default {
         })
         .map((x) => {
           return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
+        });
+    },
+    getCircles() {
+      return this.nodes
+        .get()
+        .filter((x) => {
+          return x.id >= 10 && x.id <= 13;
+        })
+        .map((x) => {
+          return Number.parseInt(x.label);
         });
     },
     setAsInitialBoard() {
@@ -339,7 +348,7 @@ export default {
 
       this.nodes =  this.nodes = new vis.DataSet([]);
       this.edges =  this.edges = new vis.DataSet([]);
-     
+
       var container = document.getElementById("graph");
       var data = {
         nodes: this.nodes,
@@ -351,6 +360,20 @@ export default {
       setTimeout(() => {
         this.network.moveTo({ scale: 2 });
       }, 0);
+    },
+    loadNextBoard() {
+      this.board_index++;
+      if(this.board_index == this.board_limit) {
+        this.board_index = 0;
+      }
+      this.loadNewBoard();
+    },
+    loadPreviousBoard() {
+      this.board_index--;
+      if(this.board_index < 0) {
+        this.board_index = this.board_limit - 1;
+      }
+      this.loadNewBoard();
     },
     async loadNewBoard() {
       this.contributing = false;
@@ -366,9 +389,10 @@ export default {
             signer
           );
 
-          let response = await connectedContract.getNewBoard();
+          let response = await connectedContract.getNewBoard(this.board_index);
           this.board = response[0];
           this.circles = response[1];
+          this.board_limit = response[2];
           this.fixed = [];
           this.board.map((x, index) => {
             if (x != 0) this.fixed.push(index + 1);
@@ -541,7 +565,7 @@ export default {
     },
     insertNumber(number) {
       var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
-      if(this.contributing || ( selectedNode !== undefined && !this.fixed.includes(selectedNode.id))) {
+      if(selectedNode !== undefined && selectedNode.label !== undefined && (this.contributing || !this.fixed.includes(selectedNode.id))) {
         if(selectedNode.id <= 9) {
           selectedNode.label = number.toString();
         }
@@ -553,10 +577,9 @@ export default {
           } else if(selectedNode.label.length == 2 && number == 0) {
             selectedNode.label = number.toString();
           }
-         
         }
         this.nodes.update(selectedNode);
-      }  
+      }
     },
     successfullContribution() {
       this.makeToast('Successfull Contribution', 'Thanks for contributing!', 'success');
@@ -586,7 +609,7 @@ export default {
   },
   mounted() {
     this.checkIfWalletIsConnected();
-    this.loadNewBoard();
+    this.loadNewBoard(0);
     this.show_overlay = false;
   },
 };
