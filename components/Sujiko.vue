@@ -31,6 +31,7 @@
             </b-button-group>
           </div>
           <div class="col text-right">
+            <b-button variant="primary" size="sm" @click="setAsInitialBoard" v-show="contributing">Set as initial board</b-button>
             <b-button variant="primary" size="sm" @click="contribute" :disabled="contributing">Contribute</b-button>
             <b-button variant="primary" size="sm" @click="contributing ? submitContribution() : verify()">{{ contributing ? "Submit" : "Verify" }}</b-button>
           </div>
@@ -69,7 +70,7 @@ export default {
       circuit_key: null,
       walletConnected: false,
       account: "",
-      CONTRACT_ADDRESS: "0x55ad7dB2860291C7271C8b8929d82322Ff0F71f0",
+      CONTRACT_ADDRESS: "0x966797a56832DC75491fb63326F7a3CB272cCdA6",
       show_overlay: true,
       contributing: false
     };
@@ -218,11 +219,54 @@ export default {
       this.clearBoard();
       this.board = [0,0,0,0,0,0,0,0,0];
       this.circles = [0,0,0,0];
-      this.fixes = [];
+      this.fixed = [];
       this.createNetwork();
     },
     async submitContribution() {
+      this.show_overlay = true;
+      let calldata = await sujikoCalldata(
+        this.board,
+        this.circles,
+        this.getBoard()
+      );
 
+      if (!calldata) {
+        this.invalidContribution();
+        return;
+      }
+
+      try {
+        const { ethereum } = window;
+
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const connectedContract = new ethers.Contract(
+            this.CONTRACT_ADDRESS,
+            Sujiko.abi,
+            signer
+          );
+
+          let response = await connectedContract.contributeSujiko(
+            calldata[0],
+            calldata[1],
+            calldata[2],
+            calldata[3]
+          );
+          
+          if(response) {
+            this.successfullContribution();
+          }
+          else {
+            this.invalidContribution();
+          }
+          
+        } else {
+          this.invalidContribution();
+        }
+      } catch (error) {
+       this.invalidContribution();
+      }
     },
     getBoard() {
       return this.nodes
@@ -233,6 +277,10 @@ export default {
         .map((x) => {
           return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
         });
+    },
+    setAsInitialBoard() {
+      this.board = this.getBoard();
+      this.makeToast('Done', 'Set as initial board.', 'info');
     },
     getNetWorkOptions() {
       return {
@@ -493,14 +541,30 @@ export default {
     },
     insertNumber(number) {
       var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
-      if (
-        selectedNode !== undefined &&
-        selectedNode.id <= 9 &&
-        !this.fixed.includes(selectedNode.id)
-      ) {
-        selectedNode.label = number.toString();
+      if(this.contributing || ( selectedNode !== undefined && !this.fixed.includes(selectedNode.id))) {
+        if(selectedNode.id <= 9) {
+          selectedNode.label = number.toString();
+        }
+        else {
+          if(selectedNode.label == ' ') {
+             selectedNode.label = number.toString();
+          } else if(selectedNode.label.length == 1) {
+            selectedNode.label += number.toString();
+          } else if(selectedNode.label.length == 2 && number == 0) {
+            selectedNode.label = number.toString();
+          }
+         
+        }
         this.nodes.update(selectedNode);
-      }
+      }  
+    },
+    successfullContribution() {
+      this.makeToast('Successfull Contribution', 'Thanks for contributing!', 'success');
+      this.show_overlay = false;
+    },
+    invalidContribution() {
+      this.makeToast('Invalid Contribution', 'Sorry we already have this sujiko or it has some error :(', 'danger');
+      this.show_overlay = false;
     },
     wrongAnswer() {
       this.makeToast('Wrong Answer', 'Nice try, you are almost there!', 'danger');
