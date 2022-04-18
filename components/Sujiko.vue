@@ -133,12 +133,11 @@ export default {
       }
     },
     async setupEventListener() {
-      // Most of this looks the same as our function askContractToMintNft
       try {
         const { ethereum } = window;
 
         if (ethereum) {
-          // Same stuff again
+
           const provider = new ethers.providers.Web3Provider(ethereum);
           const signer = provider.getSigner();
           const connectedContract = new ethers.Contract(
