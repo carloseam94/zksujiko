@@ -1,7 +1,7 @@
 const wc  = require("./witness_calculator.js");
 
 module.exports.generateWitness = async function (input) {
-	const response = await fetch('/circuit.wasm');
+	const response = await fetch('/sujiko.wasm');
 	const buffer = await response.arrayBuffer();
 	let buff;
 	await wc(buffer).then(async witnessCalculator => {

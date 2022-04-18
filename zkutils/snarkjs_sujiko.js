@@ -41,7 +41,7 @@ export async function sujikoCalldata(board, circles, solution) {
   }
 
   const { proof, publicSignals } = await window.snarkjs.groth16.prove(
-    "/circuit_0001.zkey",
+    "/sujiko_0001.zkey",
     witness
   );
 

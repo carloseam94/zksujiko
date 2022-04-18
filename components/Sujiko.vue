@@ -80,9 +80,7 @@ export default {
   },
   methods: {
     async checkIfWalletIsConnected() {
-      /*
-       * First make sure we have access to window.ethereum
-       */
+
       const { ethereum } = window;
 
       if (!ethereum) {
@@ -92,18 +90,11 @@ export default {
         console.log("We have the ethereum object", ethereum);
       }
 
-      /*
-       * Check if we're authorized to access the user's wallet
-       */
       const accounts = await ethereum.request({ method: "eth_accounts" });
 
-      /*
-       * User can have multiple authorized accounts, we grab the first one if its there!
-       */
       if (accounts.length !== 0) {
         this.account = accounts[0];
         this.walletConnected = true;
-        this.setupEventListener();
         console.log("Found an authorized account:", this.account);
       } else {
         console.log("No authorized account found");
@@ -127,41 +118,6 @@ export default {
         this.walletConnected = true;
         this.loadNewBoard(0);
         this.show_overlay = false;
-        this.setupEventListener();
-      } catch (error) {
-        console.log(error);
-      }
-    },
-    async setupEventListener() {
-      try {
-        const { ethereum } = window;
-
-        if (ethereum) {
-
-          const provider = new ethers.providers.Web3Provider(ethereum);
-          const signer = provider.getSigner();
-          const connectedContract = new ethers.Contract(
-            this.CONTRACT_ADDRESS,
-            Sujiko.abi,
-            signer
-          );
-
-          connectedContract.on("NewNFTMinted", (from, tokenId) => {
-            this.mintingNFT = false;
-            console.log(from, tokenId.toNumber());
-            alert(
-              `NFT minted: see transaction here https://mumbai.polygonscan.com/address/${
-                this.CONTRACT_ADDRESS
-              } or see NFT here https://testnets.opensea.io/assets/mumbai/${
-                this.CONTRACT_ADDRESS
-              }/${tokenId.toNumber()}`
-            );
-          });
-
-          console.log("Setup event listener!");
-        } else {
-          console.log("Ethereum object doesn't exist!");
-        }
       } catch (error) {
         console.log(error);
       }
