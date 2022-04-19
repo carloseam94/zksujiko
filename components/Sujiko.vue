@@ -19,7 +19,7 @@
           </div>
           <div class="col text-center">
             <b-button-group>
-              <b-button @click="insertNumber(' ')">del</b-button>
+              <b-button @click="insertNumber(0)">0</b-button>
               <b-button @click="insertNumber(1)">1</b-button>
               <b-button @click="insertNumber(2)">2</b-button>
               <b-button @click="insertNumber(3)">3</b-button>
@@ -34,7 +34,7 @@
           <div class="col text-right">
             <b-button variant="primary" size="sm" @click="setAsInitialBoard" v-show="contributing">Set as initial board</b-button>
             <b-button variant="primary" size="sm" @click="contribute" :disabled="contributing">Contribute</b-button>
-            <b-button variant="primary" size="sm" @click="contributing ? submitContribution() : verify()">{{ contributing ? "Submit" : "Verify" }}</b-button>
+            <b-button variant="primary" size="sm" :disabled="contributing && !initialBoardSet" @click="contributing ? submitContribution() : verify()">{{ contributing ? "Submit" : "Verify" }}</b-button>
           </div>
         </div>
         <div class="row">
@@ -75,7 +75,8 @@ export default {
       show_overlay: true,
       contributing: false,
       board_index: 0,
-      board_limit: 1
+      board_limit: 1,
+      initialBoardSet: false
     };
   },
   methods: {
@@ -140,7 +141,10 @@ export default {
 
         if (ethereum) {
           const provider = new ethers.providers.Web3Provider(ethereum);
-          const signer = provider.getSigner();
+          var signer = provider.getSigner();
+            if(!signer._address) {
+              signer = provider;
+            }
           const connectedContract = new ethers.Contract(
             this.CONTRACT_ADDRESS,
             Sujiko.abi,
@@ -170,6 +174,7 @@ export default {
     },
     contribute() {
       this.contributing = true;
+      this.initialBoardSet = false;
       this.clearBoard();
       this.board = [0,0,0,0,0,0,0,0,0];
       this.circles = [0,0,0,0];
@@ -243,8 +248,17 @@ export default {
         });
     },
     setAsInitialBoard() {
+      const circles = this.getCircles();
+      for (let i = 0; i < circles.length; i++) {
+        if(Number.isNaN(circles[i])) {
+          this.makeToast('Error', 'All circles needs a value', 'danger');
+          return false;
+        }
+      }
+      this.initialBoardSet = true;
       this.board = this.getBoard();
-      this.makeToast('Done', 'Set as initial board.', 'info');
+      this.makeToast('Done', 'Initial board was correctly set', 'info');
+      return true;
     },
     getNetWorkOptions() {
       return {
@@ -334,10 +348,12 @@ export default {
       this.contributing = false;
       try {
         const { ethereum } = window;
-
         if (ethereum) {
           const provider = new ethers.providers.Web3Provider(ethereum);
-          const signer = provider.getSigner();
+          var signer = provider.getSigner();
+          if(!signer._address) {
+            signer = provider;
+          }
           const connectedContract = new ethers.Contract(
             this.CONTRACT_ADDRESS,
             Sujiko.abi,
@@ -345,6 +361,7 @@ export default {
           );
 
           let response = await connectedContract.getNewBoard(this.board_index);
+
           this.board = response[0];
           this.circles = response[1];
           this.board_limit = response[2];
@@ -513,7 +530,7 @@ export default {
       }, 0);
 
       document.getElementById("graph").onkeydown = (event) => {
-        if (/^[1-9]$/i.test(event.key)) {
+        if (/^[0-9]$/i.test(event.key)) {
           this.insertNumber(event.key.toString());
         }
       };
@@ -522,15 +539,27 @@ export default {
       var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
       if(selectedNode !== undefined && selectedNode.label !== undefined && (this.contributing || !this.fixed.includes(selectedNode.id))) {
         if(selectedNode.id <= 9) {
-          selectedNode.label = number.toString();
+          if(number != 0) {
+            selectedNode.label = number.toString();
+          }
+          else {
+            selectedNode.label = ' ';
+          }
         }
         else {
           if(selectedNode.label == ' ') {
-             selectedNode.label = number.toString();
+             if(number != 0) {
+               selectedNode.label = number.toString();
+             }
           } else if(selectedNode.label.length == 1) {
             selectedNode.label += number.toString();
-          } else if(selectedNode.label.length == 2 && number == 0) {
-            selectedNode.label = number.toString();
+          } else if(selectedNode.label.length == 2) {
+            if(number != 0) {
+              selectedNode.label = number.toString();
+            }
+            else {
+              selectedNode.label = ' ';
+            }
           }
         }
         this.nodes.update(selectedNode);
