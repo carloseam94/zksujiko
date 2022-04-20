@@ -53,7 +53,7 @@
   </div>
 </template>
 <script>
-import { ethers } from "ethers";
+import { ethers, providers } from "ethers";
 import Sujiko from "../utils/Sujiko.json";
 import { sujikoCalldata } from "../zkutils/snarkjs_sujiko.js";
 const vis = require("vis-network/dist/vis-network.js");
@@ -138,34 +138,40 @@ export default {
 
       try {
         const { ethereum } = window;
-
-        if (ethereum) {
-          const provider = new ethers.providers.Web3Provider(ethereum);
-          var signer = provider.getSigner();
-            if(!signer._address) {
-              signer = provider;
-            }
-          const connectedContract = new ethers.Contract(
-            this.CONTRACT_ADDRESS,
-            Sujiko.abi,
-            signer
-          );
-
-          let response = await connectedContract.verifySujiko(
-            calldata[0],
-            calldata[1],
-            calldata[2],
-            calldata[3]
-          );
-
-          if(response) {
-            this.correctAnswer();
+        var provider;
+        var signer;
+        if(ethereum) {
+          provider = new ethers.providers.Web3Provider(ethereum);
+        }
+        if(provider) {
+          if(provider._address) {
+            signer = provider.getSigner();
           }
           else {
-            this.wrongAnswer();
+            signer = provider;
           }
+        }
+        else {
+          signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
+        }
 
-        } else {
+        const connectedContract = new ethers.Contract(
+          this.CONTRACT_ADDRESS,
+          Sujiko.abi,
+          signer
+        );
+
+        let response = await connectedContract.verifySujiko(
+          calldata[0],
+          calldata[1],
+          calldata[2],
+          calldata[3]
+        );
+
+        if(response) {
+          this.correctAnswer();
+        }
+        else {
           this.wrongAnswer();
         }
       } catch (error) {
@@ -348,32 +354,40 @@ export default {
       this.contributing = false;
       try {
         const { ethereum } = window;
-        if (ethereum) {
-          const provider = new ethers.providers.Web3Provider(ethereum);
-          var signer = provider.getSigner();
-          if(!signer._address) {
+        var provider;
+        var signer;
+        if(ethereum) {
+          provider = new ethers.providers.Web3Provider(ethereum);
+        }
+        if(provider) {
+          if(provider._address) {
+            signer = provider.getSigner();
+          }
+          else {
             signer = provider;
           }
-          const connectedContract = new ethers.Contract(
-            this.CONTRACT_ADDRESS,
-            Sujiko.abi,
-            signer
-          );
-
-          let response = await connectedContract.getNewBoard(this.board_index);
-
-          this.board = response[0];
-          this.circles = response[1];
-          this.board_limit = response[2];
-          this.fixed = [];
-          this.board.map((x, index) => {
-            if (x != 0) this.fixed.push(index + 1);
-          });
-
-          this.createNetwork();
-        } else {
-          console.log("Ethereum object doesn't exist!");
         }
+        else {
+          signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
+        }
+
+        const connectedContract = new ethers.Contract(
+          this.CONTRACT_ADDRESS,
+          Sujiko.abi,
+          signer
+        );
+
+        let response = await connectedContract.getNewBoard(this.board_index);
+
+        this.board = response[0];
+        this.circles = response[1];
+        this.board_limit = response[2];
+        this.fixed = [];
+        this.board.map((x, index) => {
+          if (x != 0) this.fixed.push(index + 1);
+        });
+
+        this.createNetwork();
       } catch (error) {
         console.log(error);
       }
