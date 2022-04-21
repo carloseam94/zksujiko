@@ -4,12 +4,12 @@ include "./circomlib/comparators.circom";
 
 template VerifySujiko () {  
     // public
-    signal input board[9];
+    signal input squares[9];
     signal input circles[4];
     // private
     signal input solution[9];
 
-    // verify that the solution comes from provided board
+    // verify that the solution comes from provided squares
 
     // (mul == 0 && diff != 0) || (mul != 0 && diff == 0)
     // (A && !B) || (!A && B)
@@ -25,8 +25,8 @@ template VerifySujiko () {
         comparers_diff[i] = IsZero();
         comparers_mul[i] = IsZero(); 
 
-        comparers_diff[i].in <== solution[i] - board[i];
-        comparers_mul[i].in <== solution[i] * board[i];
+        comparers_diff[i].in <== solution[i] - squares[i];
+        comparers_mul[i].in <== solution[i] * squares[i];
 
         1 === comparers_diff[i].out + comparers_mul[i].out;
     }
@@ -67,4 +67,4 @@ template VerifySujiko () {
     circles[3] === solution[4] + solution[5] + solution[7] + solution[8];
 } 
 
-component main {public [board,circles]} = VerifySujiko();
+component main {public [squares,circles]} = VerifySujiko();

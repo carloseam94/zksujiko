@@ -20,10 +20,11 @@ function unstringifyBigInts(o) {
   }
 }
 
-export async function sujikoCalldata(board, circles, solution) {
+export async function sujiko62Calldata(squares, circles, edges, solution) {
   const input = {
-    board: board,
+    squares: squares,
     circles: circles,
+    edges: edges,
     solution: solution
   };
 
@@ -41,7 +42,7 @@ export async function sujikoCalldata(board, circles, solution) {
   }
 
   const { proof, publicSignals } = await window.snarkjs.groth16.prove(
-    "/sujiko_0001.zkey",
+    "/sujiko62_0001.zkey",
     witness
   );
 

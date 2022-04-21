@@ -3,19 +3,30 @@
     <script src="snarkjs.min.js"></script>
     <b-overlay :show="show_overlay" rounded="sm">
       <div class="container pb-1" :aria-hidden="show_overlay ? 'true' : null">
+        <div class="row mt-3">
+          <div class="col text-center">
+            <h2>{{MODE}}</h2>
+            <h4 class="mb-0">{{sujiko_index+1 + "/" + sujiko_limit}}</h4>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col text-right">
+            <b-button variant="primary" size="sm" @click="swapMode" title="Swap Sujiko">Swap Mode</b-button>
+          </div>
+        </div>
         <div class="row mb-2">
           <div class="col">
             <div
               id="graph"
-              class="flex item-center justify-center h-full mt-4"
+              class="flex item-center justify-center h-full"
             ></div>
           </div>
         </div>
         <div class="row">
           <div class="col">
-            <b-button variant="primary" size="sm" @click="loadPreviousBoard" title="Previous Board"><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon></b-button>
-            <b-button variant="primary" size="sm" @click="clearBoard" title="Clear Board"><b-icon icon="trash" aria-label="trash"></b-icon></b-button>
-            <b-button variant="primary" size="sm" @click="loadNextBoard" title="Next Board"><b-icon icon="arrow-right" aria-label="arrow-right"></b-icon></b-button>
+            <b-button variant="primary" size="sm" @click="loadPreviousSujiko" title="Previous Sujiko"><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon></b-button>
+            <b-button variant="primary" size="sm" @click="clearSujiko" title="Clear Sujiko"><b-icon icon="trash" aria-label="trash"></b-icon></b-button>
+            <b-button variant="primary" size="sm" @click="loadNextSujiko" title="Next Sujiko"><b-icon icon="arrow-right" aria-label="arrow-right"></b-icon></b-button>
           </div>
           <div class="col text-center">
             <b-button-group>
@@ -55,15 +66,20 @@
 <script>
 import { ethers, providers } from "ethers";
 import Sujiko from "../utils/Sujiko.json";
-import { sujikoCalldata } from "../zkutils/snarkjs_sujiko.js";
+import Sujiko62 from "../utils/Sujiko62.json";
+import deployed_contracts from "../utils/DeployedContracts.json";
+import { sujikoCalldata } from "../zkutils/sujiko/snarkjs_sujiko.js";
+import { sujiko62Calldata } from "../zkutils/sujiko62/snarkjs_sujiko62.js";
 const vis = require("vis-network/dist/vis-network.js");
 
 export default {
   data() {
     return {
-      board: null,
+      MODE: "SUJIKO",
+      squares: null,
       fixed: null,
       circles: null,
+      sujiko62_edges: null,
       network: null,
       nodes: null,
       edges: null,
@@ -71,15 +87,23 @@ export default {
       circuit_key: null,
       walletConnected: false,
       account: "",
-      CONTRACT_ADDRESS: "0xAc76C96E266249C85406CFC8118eCa3f56a92855",
       show_overlay: true,
       contributing: false,
-      board_index: 0,
-      board_limit: 1,
+      sujiko_index: 0,
+      sujiko_limit: 1,
       initialBoardSet: false
     };
   },
   methods: {
+    async swapMode() {
+      if(this.MODE === "SUJIKO") {
+         this.MODE = "SUJIKO62";
+      } else if(this.MODE === "SUJIKO62") {
+        this.MODE = "SUJIKO";
+      }
+      this.sujiko_index = 0;
+      this.loadNewSujiko();
+    },
     async checkIfWalletIsConnected() {
 
       const { ethereum } = window;
@@ -117,7 +141,7 @@ export default {
         console.log("Connected", accounts[0]);
         this.account = accounts[0];
         this.walletConnected = true;
-        this.loadNewBoard(0);
+        this.loadNewSujiko(0);
         this.show_overlay = false;
       } catch (error) {
         console.log(error);
@@ -125,11 +149,24 @@ export default {
     },
     async verify() {
       this.show_overlay = true;
-      let calldata = await sujikoCalldata(
-        this.board,
-        this.circles,
-        this.getBoard()
-      );
+
+      var calldata;
+      if(this.MODE === "SUJIKO") {
+        calldata = await sujikoCalldata(
+          this.squares,
+          this.circles,
+          this.getSujiko()
+        );
+      } else if(this.MODE === "SUJIKO62") {
+        calldata = await sujiko62Calldata(
+          this.squares,
+          this.circles,
+          this.sujiko62_edges,
+          this.getSujiko()
+        );
+      }
+
+      console.log(calldata);
 
       if (!calldata) {
         this.wrongAnswer();
@@ -155,18 +192,36 @@ export default {
           signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
         }
 
-        const connectedContract = new ethers.Contract(
-          this.CONTRACT_ADDRESS,
-          Sujiko.abi,
-          signer
-        );
+        var response;
+        if(this.MODE === "SUJIKO") {
+          const connectedContract = new ethers.Contract(
+            deployed_contracts.sujiko.address,
+            Sujiko.abi,
+            signer
+          );
 
-        let response = await connectedContract.verifySujiko(
-          calldata[0],
-          calldata[1],
-          calldata[2],
-          calldata[3]
-        );
+          response = await connectedContract.verifySujiko(
+            calldata[0],
+            calldata[1],
+            calldata[2],
+            calldata[3]
+          );
+        } else if(this.MODE === "SUJIKO62") {
+            const connectedContract = new ethers.Contract(
+              deployed_contracts.sujiko62.address,
+              Sujiko62.abi,
+              signer
+            );
+
+          response = await connectedContract.verifySujiko62(
+            calldata[0],
+            calldata[1],
+            calldata[2],
+            calldata[3]
+          );
+        }
+
+        
 
         if(response) {
           this.correctAnswer();
@@ -181,8 +236,8 @@ export default {
     contribute() {
       this.contributing = true;
       this.initialBoardSet = false;
-      this.clearBoard();
-      this.board = [0,0,0,0,0,0,0,0,0];
+      this.clearSujiko();
+      this.squares = [0,0,0,0,0,0,0,0,0];
       this.circles = [0,0,0,0];
       this.fixed = [];
       this.createNetwork();
@@ -190,9 +245,9 @@ export default {
     async submitContribution() {
       this.show_overlay = true;
       let calldata = await sujikoCalldata(
-        this.board,
+        this.squares,
         this.getCircles(),
-        this.getBoard()
+        this.getSujiko()
       );
 
       if (!calldata) {
@@ -207,7 +262,7 @@ export default {
           const provider = new ethers.providers.Web3Provider(ethereum);
           const signer = provider.getSigner();
           const connectedContract = new ethers.Contract(
-            this.CONTRACT_ADDRESS,
+            deployed_contracts.sujiko.address,
             Sujiko.abi,
             signer
           );
@@ -233,8 +288,10 @@ export default {
        this.invalidContribution();
       }
     },
-    getBoard() {
-      return this.nodes
+    getSujiko() {
+      var sujiko;
+      if(this.MODE === "SUJIKO") {
+        sujiko = this.nodes
         .get()
         .filter((x) => {
           return x.id >= 1 && x.id <= 9;
@@ -242,6 +299,17 @@ export default {
         .map((x) => {
           return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
         });
+      } else if(this.MODE === "SUJIKO62") {
+        sujiko = this.nodes
+        .get()
+        .filter((x) => {
+          return x.id >= 1 && x.id <= 6;
+        })
+        .map((x) => {
+          return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
+        });
+      }
+      return sujiko;
     },
     getCircles() {
       return this.nodes
@@ -262,62 +330,14 @@ export default {
         }
       }
       this.initialBoardSet = true;
-      this.board = this.getBoard();
+      this.squares = this.getSujiko();
       this.makeToast('Done', 'Initial board was correctly set', 'info');
       return true;
     },
-    getNetWorkOptions() {
-      return {
-        height: "600px",
-        // width: '600px',
-        nodes: {
-          font: "20px arial black",
-          fixed: {
-            x: true,
-            y: true,
-          },
-        },
-        edges: {
-          color: "#4b5563",
-        },
-        interaction: {
-          navigationButtons: true,
-        },
-        manipulation: {
-          enabled: true,
-          addNode: function (nodeData, callback) {
-            nodeData.label = " ";
-            var r = confirm("Do you want a Square?");
-            if (r === true) {
-              nodeData.shape = "box";
-              nodeData.widthConstraint = 20;
-              nodeData.color = "#d8d2d2";
-            } else {
-              nodeData.shape = "circle";
-              nodeData.widthConstraint = 30;
-              nodeData.color = "#7eb4ef";
-            }
-            callback(nodeData);
-          },
-          editNode: function (nodeData, callback) {
-            console.log(nodeData);
-            if (nodeData.shape == "box") {
-              nodeData.shape = "circle";
-              nodeData.widthConstraint = 30;
-              nodeData.color = "#7eb4ef";
-            } else {
-              nodeData.shape = "box";
-              nodeData.widthConstraint = 20;
-              nodeData.color = "#d8d2d2";
-            }
-            callback(nodeData);
-          },
-        },
-      };
-    },
-    clearBoard() {
-      this.board = null;
+    clearSujiko() {
+      this.squares = null;
       this.circles = null;
+      this.sujiko62_edges = null;
       this.fixed = null;
       this.network.destroy();
 
@@ -336,21 +356,21 @@ export default {
         this.network.moveTo({ scale: 2 });
       }, 0);
     },
-    loadNextBoard() {
-      this.board_index++;
-      if(this.board_index == this.board_limit) {
-        this.board_index = 0;
+    loadNextSujiko() {
+      this.sujiko_index++;
+      if(this.sujiko_index == this.sujiko_limit) {
+        this.sujiko_index = 0;
       }
-      this.loadNewBoard();
+      this.loadNewSujiko();
     },
-    loadPreviousBoard() {
-      this.board_index--;
-      if(this.board_index < 0) {
-        this.board_index = this.board_limit - 1;
+    loadPreviousSujiko() {
+      this.sujiko_index--;
+      if(this.sujiko_index < 0) {
+        this.sujiko_index = this.sujiko_limit - 1;
       }
-      this.loadNewBoard();
+      this.loadNewSujiko();
     },
-    async loadNewBoard() {
+    async loadNewSujiko() {
       this.contributing = false;
       try {
         const { ethereum } = window;
@@ -371,164 +391,257 @@ export default {
           signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
         }
 
-        const connectedContract = new ethers.Contract(
-          this.CONTRACT_ADDRESS,
-          Sujiko.abi,
-          signer
-        );
+        if(this.MODE === "SUJIKO") {
+          const connectedContract = new ethers.Contract(
+            deployed_contracts.sujiko.address,
+            Sujiko.abi,
+            signer
+          );
+          const response = await connectedContract.getNewSujiko(this.sujiko_index);
 
-        let response = await connectedContract.getNewBoard(this.board_index);
+          this.squares = response[0];
+          this.circles = response[1];
+          this.sujiko_limit = response[2];
+          this.fixed = [];
+          this.squares.map((x, index) => {
+            if (x != 0) this.fixed.push(index + 1);
+          });
+        }
+        else if(this.MODE === "SUJIKO62") {
+          const connectedContract = new ethers.Contract(
+            deployed_contracts.sujiko62.address,
+            Sujiko62.abi,
+            signer
+          );
+          const response = await connectedContract.getNewSujiko62(this.sujiko_index);
 
-        this.board = response[0];
-        this.circles = response[1];
-        this.board_limit = response[2];
-        this.fixed = [];
-        this.board.map((x, index) => {
-          if (x != 0) this.fixed.push(index + 1);
-        });
-
+          this.squares = response[0];
+          this.circles = response[1];
+          this.sujiko62_edges = response[2];
+          this.sujiko_limit = response[3];
+          this.fixed = [];
+          this.squares.map((x, index) => {
+            if (x != 0) this.fixed.push(index + 1);
+          });
+        }
+        
         this.createNetwork();
+
       } catch (error) {
         console.log(error);
       }
     },
     createNetwork() {
-      // create an array with nodes
-      this.nodes = new vis.DataSet([
-        {
-          id: 1,
-          label: this.board[0] != 0 ? this.board[0].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: -100,
-          y: -100,
-        },
-        {
-          id: 2,
-          label: this.board[1] != 0 ? this.board[1].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 0,
-          y: -100,
-        },
-        {
-          id: 3,
-          label: this.board[2] != 0 ? this.board[2].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 100,
-          y: -100,
-        },
-        {
-          id: 4,
-          label: this.board[3] != 0 ? this.board[3].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: -100,
-          y: 0,
-        },
-        {
-          id: 5,
-          label: this.board[4] != 0 ? this.board[4].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 0,
-          y: 0,
-        },
-        {
-          id: 6,
-          label: this.board[5] != 0 ? this.board[5].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 100,
-          y: 0,
-        },
-        {
-          id: 7,
-          label: this.board[6] != 0 ? this.board[6].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: -100,
-          y: 100,
-        },
-        {
-          id: 8,
-          label: this.board[7] != 0 ? this.board[7].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 0,
-          y: 100,
-        },
-        {
-          id: 9,
-          label: this.board[8] != 0 ? this.board[8].toString() : " ",
-          shape: "box",
-          widthConstraint: 20,
-          color: "#d8d2d2",
-          x: 100,
-          y: 100,
-        },
-        {
-          id: 10,
-          label: this.circles[0] != 0 ? this.circles[0].toString() : " ",
-          shape: "circle",
-          widthConstraint: 30,
-          x: -50,
-          y: -50,
-        },
-        {
-          id: 11,
-          label: this.circles[1] != 0 ? this.circles[1].toString() : " ",
-          shape: "circle",
-          widthConstraint: 30,
-          x: 50,
-          y: -50,
-        },
-        {
-          id: 12,
-          label: this.circles[2] != 0 ? this.circles[2].toString() : " ",
-          shape: "circle",
-          widthConstraint: 30,
-          x: -50,
-          y: 50,
-        },
-        {
-          id: 13,
-          label: this.circles[3] != 0 ? this.circles[3].toString() : " ",
-          shape: "circle",
-          widthConstraint: 30,
-          x: 50,
-          y: 50,
-        },
-      ]);
 
-      // create an array with edges
-      this.edges = new vis.DataSet([
-        { from: 1, to: 10 },
-        { from: 2, to: 10 },
-        { from: 4, to: 10 },
-        { from: 5, to: 10 },
-        { from: 2, to: 11 },
-        { from: 3, to: 11 },
-        { from: 5, to: 11 },
-        { from: 6, to: 11 },
-        { from: 4, to: 12 },
-        { from: 5, to: 12 },
-        { from: 7, to: 12 },
-        { from: 8, to: 12 },
-        { from: 5, to: 13 },
-        { from: 6, to: 13 },
-        { from: 8, to: 13 },
-        { from: 9, to: 13 },
-      ]);
+      if(this.MODE === "SUJIKO") {
+        // create an array with nodes
+        this.nodes = new vis.DataSet([
+          {
+            id: 1,
+            label: this.squares[0] != 0 ? this.squares[0].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: -100,
+            y: -100,
+          },
+          {
+            id: 2,
+            label: this.squares[1] != 0 ? this.squares[1].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 0,
+            y: -100,
+          },
+          {
+            id: 3,
+            label: this.squares[2] != 0 ? this.squares[2].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 100,
+            y: -100,
+          },
+          {
+            id: 4,
+            label: this.squares[3] != 0 ? this.squares[3].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: -100,
+            y: 0,
+          },
+          {
+            id: 5,
+            label: this.squares[4] != 0 ? this.squares[4].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 0,
+            y: 0,
+          },
+          {
+            id: 6,
+            label: this.squares[5] != 0 ? this.squares[5].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 100,
+            y: 0,
+          },
+          {
+            id: 7,
+            label: this.squares[6] != 0 ? this.squares[6].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: -100,
+            y: 100,
+          },
+          {
+            id: 8,
+            label: this.squares[7] != 0 ? this.squares[7].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 0,
+            y: 100,
+          },
+          {
+            id: 9,
+            label: this.squares[8] != 0 ? this.squares[8].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2",
+            x: 100,
+            y: 100,
+          },
+          {
+            id: 10,
+            label: this.circles[0] != 0 ? this.circles[0].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30,
+            x: -50,
+            y: -50,
+          },
+          {
+            id: 11,
+            label: this.circles[1] != 0 ? this.circles[1].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30,
+            x: 50,
+            y: -50,
+          },
+          {
+            id: 12,
+            label: this.circles[2] != 0 ? this.circles[2].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30,
+            x: -50,
+            y: 50,
+          },
+          {
+            id: 13,
+            label: this.circles[3] != 0 ? this.circles[3].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30,
+            x: 50,
+            y: 50,
+          },
+        ]);
+
+        // create an array with edges
+        this.edges = new vis.DataSet([
+          { from: 1, to: 10 },
+          { from: 2, to: 10 },
+          { from: 4, to: 10 },
+          { from: 5, to: 10 },
+          { from: 2, to: 11 },
+          { from: 3, to: 11 },
+          { from: 5, to: 11 },
+          { from: 6, to: 11 },
+          { from: 4, to: 12 },
+          { from: 5, to: 12 },
+          { from: 7, to: 12 },
+          { from: 8, to: 12 },
+          { from: 5, to: 13 },
+          { from: 6, to: 13 },
+          { from: 8, to: 13 },
+          { from: 9, to: 13 },
+        ]);
+      }
+      else if(this.MODE === "SUJIKO62") {
+        // create an array with nodes
+        this.nodes = new vis.DataSet([
+          {
+            id: 1,
+            label: this.squares[0] != 0 ? this.squares[0].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 2,
+            label: this.squares[1] != 0 ? this.squares[1].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 3,
+            label: this.squares[2] != 0 ? this.squares[2].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 4,
+            label: this.squares[3] != 0 ? this.squares[3].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 5,
+            label: this.squares[4] != 0 ? this.squares[4].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 6,
+            label: this.squares[5] != 0 ? this.squares[5].toString() : " ",
+            shape: "box",
+            widthConstraint: 20,
+            color: "#d8d2d2"
+          },
+          {
+            id: 7,
+            label: this.circles[2] != 0 ? this.circles[0].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30,
+          },
+          {
+            id: 8,
+            label: this.circles[3] != 0 ? this.circles[1].toString() : " ",
+            shape: "circle",
+            widthConstraint: 30
+          },
+        ]);
+
+        // create an array with edges
+        var pre_parsed_edges = [];
+        for (let i = 0; i < this.sujiko62_edges.length; i++) {
+          for (let j = 0; j < this.sujiko62_edges[i].length; j++) {
+            if(this.sujiko62_edges[i][j] == 1) {
+              pre_parsed_edges.push({ from: i + 7, to: j + 1});
+            } 
+          }
+        }
+
+        this.edges = new vis.DataSet(pre_parsed_edges);
+      }
 
       // create a network
       var container = document.getElementById("graph");
@@ -549,10 +662,103 @@ export default {
         }
       };
     },
+    getNetWorkOptions() {
+      if(this.MODE === "SUJIKO") {
+        return {
+          height: "600px",
+          nodes: {
+            font: "20px arial black",
+            fixed: {
+              x: true,
+              y: true,
+            },
+          },
+          edges: {
+            color: "#4b5563",
+          },
+          interaction: {
+            navigationButtons: true,
+          },
+          manipulation: {
+            enabled: true,
+            addNode: function (nodeData, callback) {
+              nodeData.label = " ";
+              var r = confirm("Do you want a Square?");
+              if (r === true) {
+                nodeData.shape = "box";
+                nodeData.widthConstraint = 20;
+                nodeData.color = "#d8d2d2";
+              } else {
+                nodeData.shape = "circle";
+                nodeData.widthConstraint = 30;
+                nodeData.color = "#7eb4ef";
+              }
+              callback(nodeData);
+            },
+            editNode: function (nodeData, callback) {
+              console.log(nodeData);
+              if (nodeData.shape == "box") {
+                nodeData.shape = "circle";
+                nodeData.widthConstraint = 30;
+                nodeData.color = "#7eb4ef";
+              } else {
+                nodeData.shape = "box";
+                nodeData.widthConstraint = 20;
+                nodeData.color = "#d8d2d2";
+              }
+              callback(nodeData);
+            },
+          },
+        };
+      } else if(this.MODE === "SUJIKO62") {
+        return {
+          height: "600px",
+          nodes: {
+            font: "20px arial black"
+          },
+          edges: {
+            color: "#4b5563",
+          },
+          interaction: {
+            navigationButtons: true,
+          },
+          manipulation: {
+            enabled: true,
+            addNode: function (nodeData, callback) {
+              nodeData.label = " ";
+              var r = confirm("Do you want a Square?");
+              if (r === true) {
+                nodeData.shape = "box";
+                nodeData.widthConstraint = 20;
+                nodeData.color = "#d8d2d2";
+              } else {
+                nodeData.shape = "circle";
+                nodeData.widthConstraint = 30;
+                nodeData.color = "#7eb4ef";
+              }
+              callback(nodeData);
+            },
+            editNode: function (nodeData, callback) {
+              console.log(nodeData);
+              if (nodeData.shape == "box") {
+                nodeData.shape = "circle";
+                nodeData.widthConstraint = 30;
+                nodeData.color = "#7eb4ef";
+              } else {
+                nodeData.shape = "box";
+                nodeData.widthConstraint = 20;
+                nodeData.color = "#d8d2d2";
+              }
+              callback(nodeData);
+            },
+          },
+        };
+      }
+    },
     insertNumber(number) {
       var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
       if(selectedNode !== undefined && selectedNode.label !== undefined && (this.contributing || !this.fixed.includes(selectedNode.id))) {
-        if(selectedNode.id <= 9) {
+        if(selectedNode.id <= (this.MODE === "SUJIKO") ? 9 : 6) {
           if(number != 0) {
             selectedNode.label = number.toString();
           }
@@ -607,7 +813,7 @@ export default {
   },
   mounted() {
     this.checkIfWalletIsConnected();
-    this.loadNewBoard(0);
+    this.loadNewSujiko(0);
     this.show_overlay = false;
   },
 };
