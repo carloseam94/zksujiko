@@ -12,7 +12,11 @@ export default {
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
+      { property: 'og:image', content: '/favicon.ico'},
+      { property: 'og:title', content: 'Zero Knowledge Sujikos'},
+      { property: 'og:url', content: 'https://zksujiko.netlify.app/'},
+      { property: 'og:description', content: 'Solve and contribute with these fascinating puzzles'},
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
