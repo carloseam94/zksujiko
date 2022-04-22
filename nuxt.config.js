@@ -13,14 +13,6 @@ export default {
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' },
       { name: 'format-detection', content: 'telephone=no' },
-      { property: 'og:image', content: '/favicon.ico'},
-      { property: 'og:title', content: 'Zero Knowledge Sujikos'},
-      { property: 'og:url', content: 'https://zksujiko.netlify.app/'},
-      { property: 'og:description', content: 'Solve and contribute with these fascinating puzzles'},
-      { charset: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { hid: "description", name: "description", content: "" },
-      { name: "format-detection", content: "telephone=no" },
       // Twitter
       {
         hid: "twitter:card",
@@ -45,7 +37,7 @@ export default {
       {
         hid: "twitter:image",
         name: "twitter:image",
-        content: "/favicon.ico",
+        content: "https://zksujiko.netlify.app/demo.png",
       },
 
       // facebook
@@ -73,7 +65,7 @@ export default {
       {
         hid: "og:image",
         property: "og:image",
-        content: "/favicon.ico",
+        content: "https://zksujiko.netlify.app/demo.png",
       },
     ],
     link: [
@@ -114,7 +106,7 @@ export default {
       theme_color: "##007bff",
     },
     icon: {
-      fileName: "/favicon.ico",
+      fileName: "https://zksujiko.netlify.app/demo.png",
     },
   },
 
