@@ -90,75 +90,109 @@
             </b-button>
           </div>
         </div>
-        <div class="row mt-5 pt-5">
-          <div class="col">
-            <h3>Know more about Sujikos!</h3>
-          </div>
+      </div>
+    </b-overlay>
+    <div class="container">
+      <div class="row mt-5 pt-5">
+        <div class="col">
+          <h3>Know more about Sujikos!</h3>
         </div>
-        <div class="row mb-5 pb-5">
-          <div class="col">
-            <div class="accordion" role="tablist">
-              <b-card no-body class="mb-1">
-                <b-card-header header-tag="header" class="p-1" role="tab">
-                  <b-button block v-b-toggle.accordion-1 variant="primary">Sujiko</b-button
-                  >
-                </b-card-header>
-                <b-collapse
-                  id="accordion-1"
-                  visible
-                  accordion="my-accordion"
-                  role="tabpanel"
+      </div>
+      <div class="row mb-5 pb-5">
+        <div class="col">
+          <div class="accordion" role="tablist">
+            <b-card no-body class="mb-1">
+              <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button block v-b-toggle.accordion-1 variant="primary"
+                  >Sujiko</b-button
                 >
-                  <b-card-body>
-                    <b-card-text>
-                      <p>Sujiko is a logic-based, combinatorial number-placement puzzle created by Jai Gomer of Kobayaashi Studios.</p>
-                      <p>The puzzle takes place on a 3x3 grid with four circled number clues at the centre of each quadrant which indicate the sum of the four numbers in that quadrant. The numbers 1-9 must be placed in the grid, in accordance with the circled clues, to complete the puzzle.</p>
-                      </b-card-text>
-                  </b-card-body>
-                </b-collapse>
-              </b-card>
-              <b-card no-body class="mb-1">
-                <b-card-header header-tag="header" class="p-1" role="tab">
-                  <b-button block v-b-toggle.accordion-2 variant="primary">Sujiko62</b-button>
-                </b-card-header>
-                <b-collapse
-                  id="accordion-2"
-                  accordion="my-accordion"
-                  role="tabpanel"
+              </b-card-header>
+              <b-collapse
+                id="accordion-1"
+                visible
+                accordion="my-accordion"
+                role="tabpanel"
+              >
+                <b-card-body>
+                  <b-card-text>
+                    <p>
+                      Sujiko is a logic-based, combinatorial number-placement
+                      puzzle created by Jai Gomer of Kobayaashi Studios.
+                    </p>
+                    <p>
+                      The puzzle takes place on a 3x3 grid with four circled
+                      number clues at the centre of each quadrant which indicate
+                      the sum of the four numbers in that quadrant. The numbers
+                      1-9 must be placed in the grid, in accordance with the
+                      circled clues, to complete the puzzle.
+                    </p>
+                  </b-card-text>
+                </b-card-body>
+              </b-collapse>
+            </b-card>
+            <b-card no-body class="mb-1">
+              <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button block v-b-toggle.accordion-2 variant="primary"
+                  >Sujiko62</b-button
                 >
-                  <b-card-body>
-                    <b-card-text>
-                      <p>Sujiko62 is a new type of sujikos that I created. They have 6 squares and 2 circles (hence the 62 in the name).</p>
-                      <p>The magic about this particular kind of sujikos is that they are not restricted anymore in the form of a grid. They can come in new and exciting forms because now they behave like graphs.</p>
-                      <p>The same rules of regular sujikos applies to Sujiko62s but this time the range of valid numbers is 1-6</p>
-                    </b-card-text>
-                  </b-card-body>
-                </b-collapse>
-              </b-card>
+              </b-card-header>
+              <b-collapse
+                id="accordion-2"
+                accordion="my-accordion"
+                role="tabpanel"
+              >
+                <b-card-body>
+                  <b-card-text>
+                    <p>
+                      Sujiko62 is a new type of sujikos that I created. They
+                      have 6 squares and 2 circles (hence the 62 in the name).
+                    </p>
+                    <p>
+                      The magic about this particular kind of sujikos is that
+                      they are no longer constrained in a grid shape. They can
+                      come in new and exciting forms because now they behave
+                      like graphs.
+                    </p>
+                    <p>
+                      The same rules for regular sujikos apply to Sujiko62s but
+                      this time the range of valid numbers is 1-6.
+                    </p>
+                  </b-card-text>
+                </b-card-body>
+              </b-collapse>
+            </b-card>
 
-              <b-card no-body class="mb-1">
-                <b-card-header header-tag="header" class="p-1" role="tab">
-                  <b-button block v-b-toggle.accordion-3 variant="primary">XSujiko</b-button>
-                </b-card-header>
-                <b-collapse
-                  id="accordion-3"
-                  accordion="my-accordion"
-                  role="tabpanel"
+            <b-card no-body class="mb-1">
+              <b-card-header header-tag="header" class="p-1" role="tab">
+                <b-button block v-b-toggle.accordion-3 variant="primary"
+                  >XSujiko</b-button
                 >
-                  <b-card-body>
-                    <b-card-text>
-                      <p>XSujikos are also a new type of sujikos that I created. They are still under development but they will be ready soon!</p>
-                      <p>This type will be the final evolution of Sujiko62s. They will be graphs as well, but this time without the restriction of 6 squares and 2 circles.</p>
-                      <p>See you soon and thanks for playing!</p>
-                    </b-card-text>
-                  </b-card-body>
-                </b-collapse>
-              </b-card>
-            </div>
+              </b-card-header>
+              <b-collapse
+                id="accordion-3"
+                accordion="my-accordion"
+                role="tabpanel"
+              >
+                <b-card-body>
+                  <b-card-text>
+                    <p>
+                      XSujikos are also a new type of sujikos that I created.
+                      They are still under development but will be ready soon!
+                    </p>
+                    <p>
+                      This type will be the final evolution of Sujiko62s. They
+                      will be graphs as well, but this time without the
+                      restriction of 6 squares and 2 circles.
+                    </p>
+                    <p>See you soon and thanks for playing!</p>
+                  </b-card-text>
+                </b-card-body>
+              </b-collapse>
+            </b-card>
           </div>
         </div>
       </div>
-    </b-overlay>
+    </div>
   </div>
 </template>
 <script>
