@@ -17,6 +17,64 @@ export default {
       { property: 'og:title', content: 'Zero Knowledge Sujikos'},
       { property: 'og:url', content: 'https://zksujiko.netlify.app/'},
       { property: 'og:description', content: 'Solve and contribute with these fascinating puzzles'},
+      { charset: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { hid: "description", name: "description", content: "" },
+      { name: "format-detection", content: "telephone=no" },
+      // Twitter
+      {
+        hid: "twitter:card",
+        name: "twitter:card",
+        content: "summary_large_image",
+      },
+      {
+        hid: "twitter:url",
+        name: "twitter:url",
+        content: "https://zksujiko.netlify.app/",
+      },
+      {
+        hid: "twitter:title",
+        name: "twitter:title",
+        content: "Zero Knowledge Sujikos",
+      },
+      {
+        hid: "twitter:description",
+        name: "twitter:description",
+        content: "Solve and contribute with these fascinating puzzles",
+      },
+      {
+        hid: "twitter:image",
+        name: "twitter:image",
+        content: "/favicon.ico",
+      },
+
+      // facebook
+      {
+        hid: "og:site_name",
+        property: "og:site_name",
+        content: "zksujiko",
+      },
+      { hid: "og:type", property: "og:type", content: "website" },
+      {
+        hid: "og:url",
+        property: "og:url",
+        content: "https://zksujiko.netlify.app/",
+      },
+      {
+        hid: "og:title",
+        property: "og:title",
+        content: "Zero Knowledge Sujikos",
+      },
+      {
+        hid: "og:description",
+        property: "og:description",
+        content: "Solve and contribute with these fascinating puzzles",
+      },
+      {
+        hid: "og:image",
+        property: "og:image",
+        content: "/favicon.ico",
+      },
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -46,6 +104,19 @@ export default {
     // https://go.nuxtjs.dev/bootstrap
     'bootstrap-vue/nuxt',
   ],
+
+  pwa: {
+    manifest: {
+      lang: "en",
+      name: "ZK Sujiko",
+      short_name: "zksujiko",
+      description: "Solve and contribute with these fascinating puzzles",
+      theme_color: "##007bff",
+    },
+    icon: {
+      fileName: "/favicon.ico",
+    },
+  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
