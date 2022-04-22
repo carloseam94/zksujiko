@@ -1,5 +1,3 @@
-import { generateWitness } from "./generate_witness";
-
 function unstringifyBigInts(o) {
   if (typeof o == "string" && /^[0-9]+$/.test(o)) {
     return BigInt(o);
@@ -20,30 +18,11 @@ function unstringifyBigInts(o) {
   }
 }
 
-export async function sujiko62Calldata(squares, circles, edges, solution) {
-  const input = {
-    squares: squares,
-    circles: circles,
-    edges: edges,
-    solution: solution
-  };
-
-  let generateWitnessSuccess = true;
-
-  let witness = await generateWitness(input)
-    .then()
-    .catch((error) => {
-      console.log(error);
-      generateWitnessSuccess = false;
-    });
-
-  if (!generateWitnessSuccess) {
-    return;
-  }
-
-  const { proof, publicSignals } = await window.snarkjs.groth16.prove(
-    "/sujiko62_0001.zkey",
-    witness
+export async function exportCallDataGroth16(input, wasmPath, zkeyPath) {
+  const { proof, publicSignals } = await window.snarkjs.groth16.fullProve(
+    input,
+    wasmPath,
+    zkeyPath
   );
 
   const editedPublicSignals = unstringifyBigInts(publicSignals);
@@ -67,7 +46,7 @@ export async function sujiko62Calldata(squares, circles, edges, solution) {
   const Input = [];
 
   for (let i = 8; i < argv.length; i++) {
-    Input.push(argv[i])
+    Input.push(argv[i]);
   }
 
   return [a, b, c, Input];

@@ -3,15 +3,10 @@
     <script src="snarkjs.min.js"></script>
     <b-overlay :show="show_overlay" rounded="sm">
       <div class="container pb-1" :aria-hidden="show_overlay ? 'true' : null">
-        <div class="row mt-3">
+        <div class="row mt-3 mt-md-5">
           <div class="col text-center">
-            <h2>{{MODE}}</h2>
-            <h4 class="mb-0">{{sujiko_index+1 + "/" + sujiko_limit}}</h4>
-          </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col text-right">
-            <b-button variant="primary" size="sm" @click="swapMode" title="Swap Sujiko">Swap Mode</b-button>
+            <h2>{{ MODE }}</h2>
+            <h4>{{ sujiko_index + 1 + "/" + sujiko_limit }}</h4>
           </div>
         </div>
         <div class="row mb-2">
@@ -23,12 +18,30 @@
           </div>
         </div>
         <div class="row">
-          <div class="col">
-            <b-button variant="primary" size="sm" @click="loadPreviousSujiko" title="Previous Sujiko"><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon></b-button>
-            <b-button variant="primary" size="sm" @click="clearSujiko" title="Clear Sujiko"><b-icon icon="trash" aria-label="trash"></b-icon></b-button>
-            <b-button variant="primary" size="sm" @click="loadNextSujiko" title="Next Sujiko"><b-icon icon="arrow-right" aria-label="arrow-right"></b-icon></b-button>
+          <div class="col text-md-left text-center mb-2">
+            <b-button
+              variant="primary"
+              size="sm"
+              @click="loadPreviousSujiko"
+              title="Previous Sujiko"
+              ><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon
+            ></b-button>
+            <b-button
+              variant="primary"
+              size="sm"
+              @click="changeMode"
+              title="Change Mode"
+              >Change Mode</b-button
+            >
+            <b-button
+              variant="primary"
+              size="sm"
+              @click="loadNextSujiko"
+              title="Next Sujiko"
+              ><b-icon icon="arrow-right" aria-label="arrow-right"></b-icon
+            ></b-button>
           </div>
-          <div class="col text-center">
+          <div class="col text-center mb-2">
             <b-button-group>
               <b-button @click="insertNumber(0)">0</b-button>
               <b-button @click="insertNumber(1)">1</b-button>
@@ -42,10 +55,28 @@
               <b-button @click="insertNumber(9)">9</b-button>
             </b-button-group>
           </div>
-          <div class="col text-right">
-            <b-button variant="primary" size="sm" @click="setAsInitialBoard" v-show="contributing">Set as initial board</b-button>
-            <b-button variant="primary" size="sm" @click="contribute" :disabled="contributing">Contribute</b-button>
-            <b-button variant="primary" size="sm" :disabled="contributing && !initialBoardSet" @click="contributing ? submitContribution() : verify()">{{ contributing ? "Submit" : "Verify" }}</b-button>
+          <div class="col text-md-right text-center mb-2">
+            <b-button
+              variant="primary"
+              size="sm"
+              @click="setAsInitialBoard"
+              v-show="contributing"
+              >Set as initial board</b-button
+            >
+            <b-button
+              variant="primary"
+              size="sm"
+              @click="contribute"
+              :disabled="contributing"
+              >Contribute</b-button
+            >
+            <b-button
+              variant="primary"
+              size="sm"
+              :disabled="contributing && !initialBoardSet"
+              @click="contributing ? submitContribution() : verify()"
+              >{{ contributing ? "Submit" : "Verify" }}</b-button
+            >
           </div>
         </div>
         <div class="row">
@@ -59,6 +90,73 @@
             </b-button>
           </div>
         </div>
+        <div class="row mt-5 pt-5">
+          <div class="col">
+            <h3>Know more about Sujikos!</h3>
+          </div>
+        </div>
+        <div class="row mb-5 pb-5">
+          <div class="col">
+            <div class="accordion" role="tablist">
+              <b-card no-body class="mb-1">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                  <b-button block v-b-toggle.accordion-1 variant="primary">Sujiko</b-button
+                  >
+                </b-card-header>
+                <b-collapse
+                  id="accordion-1"
+                  visible
+                  accordion="my-accordion"
+                  role="tabpanel"
+                >
+                  <b-card-body>
+                    <b-card-text>
+                      <p>Sujiko is a logic-based, combinatorial number-placement puzzle created by Jai Gomer of Kobayaashi Studios.</p>
+                      <p>The puzzle takes place on a 3x3 grid with four circled number clues at the centre of each quadrant which indicate the sum of the four numbers in that quadrant. The numbers 1-9 must be placed in the grid, in accordance with the circled clues, to complete the puzzle.</p>
+                      </b-card-text>
+                  </b-card-body>
+                </b-collapse>
+              </b-card>
+              <b-card no-body class="mb-1">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                  <b-button block v-b-toggle.accordion-2 variant="primary">Sujiko62</b-button>
+                </b-card-header>
+                <b-collapse
+                  id="accordion-2"
+                  accordion="my-accordion"
+                  role="tabpanel"
+                >
+                  <b-card-body>
+                    <b-card-text>
+                      <p>Sujiko62 is a new type of sujikos that I created. They have 6 squares and 2 circles (hence the 62 in the name).</p>
+                      <p>The magic about this particular kind of sujikos is that they are not restricted anymore in the form of a grid. They can come in new and exciting forms because now they behave like graphs.</p>
+                      <p>The same rules of regular sujikos applies to Sujiko62s but this time the range of valid numbers is 1-6</p>
+                    </b-card-text>
+                  </b-card-body>
+                </b-collapse>
+              </b-card>
+
+              <b-card no-body class="mb-1">
+                <b-card-header header-tag="header" class="p-1" role="tab">
+                  <b-button block v-b-toggle.accordion-3 variant="primary">XSujiko</b-button>
+                </b-card-header>
+                <b-collapse
+                  id="accordion-3"
+                  accordion="my-accordion"
+                  role="tabpanel"
+                >
+                  <b-card-body>
+                    <b-card-text>
+                      <p>XSujikos are also a new type of sujikos that I created. They are still under development but they will be ready soon!</p>
+                      <p>This type will be the final evolution of Sujiko62s. They will be graphs as well, but this time without the restriction of 6 squares and 2 circles.</p>
+                      <p>See you soon and thanks for playing!</p>
+                    </b-card-text>
+                  </b-card-body>
+                </b-collapse>
+              </b-card>
+            </div>
+          </div>
+        </div>
       </div>
     </b-overlay>
   </div>
@@ -68,8 +166,8 @@ import { ethers, providers } from "ethers";
 import Sujiko from "../utils/Sujiko.json";
 import Sujiko62 from "../utils/Sujiko62.json";
 import deployed_contracts from "../utils/DeployedContracts.json";
-import { sujikoCalldata } from "../zkutils/sujiko/snarkjs_sujiko.js";
-import { sujiko62Calldata } from "../zkutils/sujiko62/snarkjs_sujiko62.js";
+import { sujikoCalldata } from "../zkutils/sujiko_prover.js";
+import { sujiko62Calldata } from "../zkutils/sujiko62_prover.js";
 const vis = require("vis-network/dist/vis-network.js");
 
 export default {
@@ -83,29 +181,32 @@ export default {
       network: null,
       nodes: null,
       edges: null,
-      circuit_wasm: null,
-      circuit_key: null,
       walletConnected: false,
       account: "",
       show_overlay: true,
       contributing: false,
       sujiko_index: 0,
       sujiko_limit: 1,
-      initialBoardSet: false
+      initialBoardSet: false,
     };
   },
   methods: {
-    async swapMode() {
-      if(this.MODE === "SUJIKO") {
-         this.MODE = "SUJIKO62";
-      } else if(this.MODE === "SUJIKO62") {
+    async changeMode() {
+      if (this.MODE === "SUJIKO") {
+        this.MODE = "SUJIKO62";
+      } else if (this.MODE === "SUJIKO62") {
+        this.MODE = "XSUJIKO (Working on this)";
+        this.clearSujiko();
+        this.sujiko_index = 0;
+        this.sujiko_limit = 1;
+        return;
+      } else {
         this.MODE = "SUJIKO";
       }
       this.sujiko_index = 0;
       this.loadNewSujiko();
     },
     async checkIfWalletIsConnected() {
-
       const { ethereum } = window;
 
       if (!ethereum) {
@@ -151,13 +252,16 @@ export default {
       this.show_overlay = true;
 
       var calldata;
-      if(this.MODE === "SUJIKO") {
+      if (this.MODE === "SUJIKO") {
+        console.log(this.squares);
+        console.log(this.circles);
+        console.log(this.getSujiko());
         calldata = await sujikoCalldata(
           this.squares,
           this.circles,
           this.getSujiko()
         );
-      } else if(this.MODE === "SUJIKO62") {
+      } else if (this.MODE === "SUJIKO62") {
         calldata = await sujiko62Calldata(
           this.squares,
           this.circles,
@@ -177,23 +281,23 @@ export default {
         const { ethereum } = window;
         var provider;
         var signer;
-        if(ethereum) {
+        if (ethereum) {
           provider = new ethers.providers.Web3Provider(ethereum);
         }
-        if(provider) {
-          if(provider._address) {
+        if (provider) {
+          if (provider._address) {
             signer = provider.getSigner();
-          }
-          else {
+          } else {
             signer = provider;
           }
-        }
-        else {
-          signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
+        } else {
+          signer = ethers.providers.getDefaultProvider(
+            "https://api.s0.b.hmny.io"
+          );
         }
 
         var response;
-        if(this.MODE === "SUJIKO") {
+        if (this.MODE === "SUJIKO") {
           const connectedContract = new ethers.Contract(
             deployed_contracts.sujiko.address,
             Sujiko.abi,
@@ -206,12 +310,12 @@ export default {
             calldata[2],
             calldata[3]
           );
-        } else if(this.MODE === "SUJIKO62") {
-            const connectedContract = new ethers.Contract(
-              deployed_contracts.sujiko62.address,
-              Sujiko62.abi,
-              signer
-            );
+        } else if (this.MODE === "SUJIKO62") {
+          const connectedContract = new ethers.Contract(
+            deployed_contracts.sujiko62.address,
+            Sujiko62.abi,
+            signer
+          );
 
           response = await connectedContract.verifySujiko62(
             calldata[0],
@@ -221,34 +325,55 @@ export default {
           );
         }
 
-        
-
-        if(response) {
+        if (response) {
           this.correctAnswer();
-        }
-        else {
+        } else {
           this.wrongAnswer();
         }
       } catch (error) {
-       this.wrongAnswer();
+        this.wrongAnswer();
       }
     },
     contribute() {
       this.contributing = true;
       this.initialBoardSet = false;
       this.clearSujiko();
-      this.squares = [0,0,0,0,0,0,0,0,0];
-      this.circles = [0,0,0,0];
-      this.fixed = [];
+
+      if (this.MODE === "SUJIKO") {
+        this.squares = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.circles = [0, 0, 0, 0];
+        this.fixed = [10, 11, 12, 13];
+      } else if (this.MODE === "SUJIKO62") {
+        this.squares = [0, 0, 0, 0, 0, 0];
+        this.circles = [0, 0];
+        this.sujiko62_edges = [
+          [0, 0, 0, 0, 0, 0],
+          [0, 0, 0, 0, 0, 0],
+        ];
+        this.fixed = [6, 7];
+      }
       this.createNetwork();
     },
     async submitContribution() {
       this.show_overlay = true;
-      let calldata = await sujikoCalldata(
-        this.squares,
-        this.getCircles(),
-        this.getSujiko()
-      );
+
+      var calldata;
+      if (this.MODE === "SUJIKO") {
+        calldata = await sujikoCalldata(
+          this.squares,
+          this.circles,
+          this.getSujiko()
+        );
+      } else if (this.MODE === "SUJIKO62") {
+        calldata = await sujiko62Calldata(
+          this.squares,
+          this.circles,
+          this.sujiko62_edges,
+          this.getSujiko()
+        );
+      }
+
+      console.log(calldata);
 
       if (!calldata) {
         this.invalidContribution();
@@ -261,88 +386,118 @@ export default {
         if (ethereum) {
           const provider = new ethers.providers.Web3Provider(ethereum);
           const signer = provider.getSigner();
-          const connectedContract = new ethers.Contract(
-            deployed_contracts.sujiko.address,
-            Sujiko.abi,
-            signer
-          );
 
-          let response = await connectedContract.contributeSujiko(
-            calldata[0],
-            calldata[1],
-            calldata[2],
-            calldata[3]
-          );
+          var response;
+          if (this.MODE === "SUJIKO") {
+            const connectedContract = new ethers.Contract(
+              deployed_contracts.sujiko.address,
+              Sujiko.abi,
+              signer
+            );
 
-          if(response) {
-            this.successfullContribution();
+            response = await connectedContract.contributeSujiko(
+              calldata[0],
+              calldata[1],
+              calldata[2],
+              calldata[3]
+            );
+          } else if (this.MODE === "SUJIKO62") {
+            const connectedContract = new ethers.Contract(
+              deployed_contracts.sujiko62.address,
+              Sujiko62.abi,
+              signer
+            );
+
+            response = await connectedContract.contributeSujiko62(
+              calldata[0],
+              calldata[1],
+              calldata[2],
+              calldata[3]
+            );
           }
-          else {
+
+          if (response) {
+            this.successfullContribution();
+          } else {
             this.invalidContribution();
           }
-
         } else {
           this.invalidContribution();
         }
       } catch (error) {
-       this.invalidContribution();
+        this.invalidContribution();
       }
     },
     getSujiko() {
       var sujiko;
-      if(this.MODE === "SUJIKO") {
+      if (this.MODE === "SUJIKO") {
         sujiko = this.nodes
-        .get()
-        .filter((x) => {
-          return x.id >= 1 && x.id <= 9;
-        })
-        .map((x) => {
-          return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
-        });
-      } else if(this.MODE === "SUJIKO62") {
+          .get()
+          .filter((x) => {
+            return x.id >= 1 && x.id <= 9;
+          })
+          .map((x) => {
+            return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
+          });
+      } else if (this.MODE === "SUJIKO62") {
         sujiko = this.nodes
-        .get()
-        .filter((x) => {
-          return x.id >= 1 && x.id <= 6;
-        })
-        .map((x) => {
-          return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
-        });
+          .get()
+          .filter((x) => {
+            return x.id >= 1 && x.id <= 6;
+          })
+          .map((x) => {
+            return /^[1-9]$/i.test(x.label) ? Number.parseInt(x.label) : 0;
+          });
       }
       return sujiko;
     },
     getCircles() {
-      return this.nodes
-        .get()
-        .filter((x) => {
-          return x.id >= 10 && x.id <= 13;
-        })
-        .map((x) => {
-          return Number.parseInt(x.label);
-        });
+      var circles;
+      if (this.MODE === "SUJIKO") {
+        circles = this.nodes
+          .get()
+          .filter((x) => {
+            return x.id >= 10 && x.id <= 13;
+          })
+          .map((x) => {
+            return Number.parseInt(x.label);
+          });
+      } else if (this.MODE === "SUJIKO62") {
+        circles = this.nodes
+          .get()
+          .filter((x) => {
+            return x.id >= 7 && x.id <= 8;
+          })
+          .map((x) => {
+            return Number.parseInt(x.label);
+          });
+      }
+      return circles;
     },
     setAsInitialBoard() {
       const circles = this.getCircles();
       for (let i = 0; i < circles.length; i++) {
-        if(Number.isNaN(circles[i])) {
-          this.makeToast('Error', 'All circles needs a value', 'danger');
+        if (Number.isNaN(circles[i])) {
+          this.makeToast("Error", "All circles needs a value", "danger");
           return false;
         }
       }
       this.initialBoardSet = true;
       this.squares = this.getSujiko();
-      this.makeToast('Done', 'Initial board was correctly set', 'info');
+      this.circles = circles;
+      this.makeToast("Done", "Initial board was correctly set", "info");
       return true;
     },
     clearSujiko() {
+      // this.MODE = "CLEAR";
       this.squares = null;
       this.circles = null;
       this.sujiko62_edges = null;
       this.fixed = null;
       this.network.destroy();
 
-      this.nodes =  this.nodes = new vis.DataSet([]);
-      this.edges =  this.edges = new vis.DataSet([]);
+      this.nodes = this.nodes = new vis.DataSet([]);
+      this.edges = this.edges = new vis.DataSet([]);
 
       var container = document.getElementById("graph");
       var data = {
@@ -358,14 +513,14 @@ export default {
     },
     loadNextSujiko() {
       this.sujiko_index++;
-      if(this.sujiko_index == this.sujiko_limit) {
+      if (this.sujiko_index == this.sujiko_limit) {
         this.sujiko_index = 0;
       }
       this.loadNewSujiko();
     },
     loadPreviousSujiko() {
       this.sujiko_index--;
-      if(this.sujiko_index < 0) {
+      if (this.sujiko_index < 0) {
         this.sujiko_index = this.sujiko_limit - 1;
       }
       this.loadNewSujiko();
@@ -376,28 +531,30 @@ export default {
         const { ethereum } = window;
         var provider;
         var signer;
-        if(ethereum) {
+        if (ethereum) {
           provider = new ethers.providers.Web3Provider(ethereum);
         }
-        if(provider) {
-          if(provider._address) {
+        if (provider) {
+          if (provider._address) {
             signer = provider.getSigner();
-          }
-          else {
+          } else {
             signer = provider;
           }
-        }
-        else {
-          signer = ethers.providers.getDefaultProvider("https://api.s0.b.hmny.io");
+        } else {
+          signer = ethers.providers.getDefaultProvider(
+            "https://api.s0.b.hmny.io"
+          );
         }
 
-        if(this.MODE === "SUJIKO") {
+        if (this.MODE === "SUJIKO") {
           const connectedContract = new ethers.Contract(
             deployed_contracts.sujiko.address,
             Sujiko.abi,
             signer
           );
-          const response = await connectedContract.getNewSujiko(this.sujiko_index);
+          const response = await connectedContract.getNewSujiko(
+            this.sujiko_index
+          );
 
           this.squares = response[0];
           this.circles = response[1];
@@ -406,14 +563,19 @@ export default {
           this.squares.map((x, index) => {
             if (x != 0) this.fixed.push(index + 1);
           });
-        }
-        else if(this.MODE === "SUJIKO62") {
+          this.fixed.push(10);
+          this.fixed.push(11);
+          this.fixed.push(12);
+          this.fixed.push(13);
+        } else if (this.MODE === "SUJIKO62") {
           const connectedContract = new ethers.Contract(
             deployed_contracts.sujiko62.address,
             Sujiko62.abi,
             signer
           );
-          const response = await connectedContract.getNewSujiko62(this.sujiko_index);
+          const response = await connectedContract.getNewSujiko62(
+            this.sujiko_index
+          );
 
           this.squares = response[0];
           this.circles = response[1];
@@ -423,17 +585,17 @@ export default {
           this.squares.map((x, index) => {
             if (x != 0) this.fixed.push(index + 1);
           });
+          this.fixed.push(7);
+          this.fixed.push(8);
         }
-        
-        this.createNetwork();
 
+        this.createNetwork();
       } catch (error) {
         console.log(error);
       }
     },
     createNetwork() {
-
-      if(this.MODE === "SUJIKO") {
+      if (this.MODE === "SUJIKO") {
         // create an array with nodes
         this.nodes = new vis.DataSet([
           {
@@ -570,8 +732,7 @@ export default {
           { from: 8, to: 13 },
           { from: 9, to: 13 },
         ]);
-      }
-      else if(this.MODE === "SUJIKO62") {
+      } else if (this.MODE === "SUJIKO62") {
         // create an array with nodes
         this.nodes = new vis.DataSet([
           {
@@ -579,54 +740,54 @@ export default {
             label: this.squares[0] != 0 ? this.squares[0].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 2,
             label: this.squares[1] != 0 ? this.squares[1].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 3,
             label: this.squares[2] != 0 ? this.squares[2].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 4,
             label: this.squares[3] != 0 ? this.squares[3].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 5,
             label: this.squares[4] != 0 ? this.squares[4].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 6,
             label: this.squares[5] != 0 ? this.squares[5].toString() : " ",
             shape: "box",
             widthConstraint: 20,
-            color: "#d8d2d2"
+            color: "#d8d2d2",
           },
           {
             id: 7,
-            label: this.circles[2] != 0 ? this.circles[0].toString() : " ",
+            label: this.circles[0] != 0 ? this.circles[0].toString() : " ",
             shape: "circle",
             widthConstraint: 30,
           },
           {
             id: 8,
-            label: this.circles[3] != 0 ? this.circles[1].toString() : " ",
+            label: this.circles[1] != 0 ? this.circles[1].toString() : " ",
             shape: "circle",
-            widthConstraint: 30
+            widthConstraint: 30,
           },
         ]);
 
@@ -634,9 +795,9 @@ export default {
         var pre_parsed_edges = [];
         for (let i = 0; i < this.sujiko62_edges.length; i++) {
           for (let j = 0; j < this.sujiko62_edges[i].length; j++) {
-            if(this.sujiko62_edges[i][j] == 1) {
-              pre_parsed_edges.push({ from: i + 7, to: j + 1});
-            } 
+            if (this.sujiko62_edges[i][j] == 1) {
+              pre_parsed_edges.push({ from: i + 7, to: j + 1 });
+            }
           }
         }
 
@@ -652,9 +813,11 @@ export default {
       var options = this.getNetWorkOptions();
       this.network = new vis.Network(container, data, options);
 
-      setTimeout(() => {
-        this.network.moveTo({ scale: 2 });
-      }, 0);
+      if (this.MODE === "SUJIKO") {
+        setTimeout(() => {
+          this.network.moveTo({ scale: 2 });
+        }, 0);
+      }
 
       document.getElementById("graph").onkeydown = (event) => {
         if (/^[0-9]$/i.test(event.key)) {
@@ -663,8 +826,77 @@ export default {
       };
     },
     getNetWorkOptions() {
-      if(this.MODE === "SUJIKO") {
-        return {
+      var options;
+      if (this.MODE === "SUJIKO") {
+        options = {
+          height: "600px",
+          nodes: {
+            font: "20px arial black",
+            fixed: {
+              x: true,
+              y: true,
+            },
+          },
+          edges: {
+            color: "#4b5563",
+          },
+          interaction: {
+            navigationButtons: true,
+          },
+          manipulation: {
+            enabled: false,
+          },
+        };
+      } else if (this.MODE === "SUJIKO62") {
+        options = {
+          height: "600px",
+          nodes: {
+            font: "20px arial black",
+          },
+          edges: {
+            color: "#4b5563",
+          },
+          interaction: {
+            navigationButtons: true,
+          },
+          manipulation: {
+            enabled: this.contributing,
+            addNode: false,
+            deleteNode: false,
+            editEdge: false,
+            addEdge: (edgeData, callback) => {
+              console.log(this.sujiko62_edges);
+              console.log(edgeData);
+              if (edgeData.from == 7 && edgeData.to != 7 && edgeData.to != 8) {
+                this.sujiko62_edges[0][edgeData.to - 1] = 1;
+                callback(edgeData);
+              } else if (
+                edgeData.to == 7 &&
+                edgeData.from != 7 &&
+                edgeData.from != 8
+              ) {
+                this.sujiko62_edges[0][edgeData.from - 1] = 1;
+                callback(edgeData);
+              } else if (
+                edgeData.from == 8 &&
+                edgeData.to != 8 &&
+                edgeData.to != 7
+              ) {
+                this.sujiko62_edges[1][edgeData.to - 1] = 1;
+                callback(edgeData);
+              } else if (
+                edgeData.to == 8 &&
+                edgeData.from != 8 &&
+                edgeData.from != 7
+              ) {
+                this.sujiko62_edges[1][edgeData.from - 1] = 1;
+                callback(edgeData);
+              }
+            },
+          },
+        };
+      } else {
+        options = {
           height: "600px",
           nodes: {
             font: "20px arial black",
@@ -710,75 +942,40 @@ export default {
             },
           },
         };
-      } else if(this.MODE === "SUJIKO62") {
-        return {
-          height: "600px",
-          nodes: {
-            font: "20px arial black"
-          },
-          edges: {
-            color: "#4b5563",
-          },
-          interaction: {
-            navigationButtons: true,
-          },
-          manipulation: {
-            enabled: true,
-            addNode: function (nodeData, callback) {
-              nodeData.label = " ";
-              var r = confirm("Do you want a Square?");
-              if (r === true) {
-                nodeData.shape = "box";
-                nodeData.widthConstraint = 20;
-                nodeData.color = "#d8d2d2";
-              } else {
-                nodeData.shape = "circle";
-                nodeData.widthConstraint = 30;
-                nodeData.color = "#7eb4ef";
-              }
-              callback(nodeData);
-            },
-            editNode: function (nodeData, callback) {
-              console.log(nodeData);
-              if (nodeData.shape == "box") {
-                nodeData.shape = "circle";
-                nodeData.widthConstraint = 30;
-                nodeData.color = "#7eb4ef";
-              } else {
-                nodeData.shape = "box";
-                nodeData.widthConstraint = 20;
-                nodeData.color = "#d8d2d2";
-              }
-              callback(nodeData);
-            },
-          },
-        };
       }
+      return options;
     },
     insertNumber(number) {
       var selectedNode = this.nodes.get(this.network.getSelectedNodes()[0]);
-      if(selectedNode !== undefined && selectedNode.label !== undefined && (this.contributing || !this.fixed.includes(selectedNode.id))) {
-        if(selectedNode.id <= (this.MODE === "SUJIKO") ? 9 : 6) {
-          if(number != 0) {
-            selectedNode.label = number.toString();
-          }
-          else {
-            selectedNode.label = ' ';
-          }
+      if (
+        selectedNode !== undefined &&
+        selectedNode.label !== undefined &&
+        (this.contributing || !this.fixed.includes(selectedNode.id))
+      ) {
+        var aux;
+        if (this.MODE === "SUJIKO") {
+          aux = 9;
+        } else if (this.MODE === "SUJIKO62") {
+          aux = 6;
         }
-        else {
-          if(selectedNode.label == ' ') {
-             if(number != 0) {
-               selectedNode.label = number.toString();
-             }
-          } else if(selectedNode.label.length == 1) {
-            selectedNode.label += number.toString();
-          } else if(selectedNode.label.length == 2) {
-            if(number != 0) {
+        if (selectedNode.id <= aux) {
+          if (number != 0) {
+            selectedNode.label = number.toString();
+          } else {
+            selectedNode.label = " ";
+          }
+        } else {
+          if (selectedNode.label == " ") {
+            if (number != 0) {
               selectedNode.label = number.toString();
             }
-            else {
-              selectedNode.label = ' ';
+          } else if (selectedNode.label.length == 1) {
+            selectedNode.label += number.toString();
+          } else if (selectedNode.label.length == 2) {
+            if (number != 0) {
+              selectedNode.label = number.toString();
+            } else {
+              selectedNode.label = " ";
             }
           }
         }
@@ -786,28 +983,40 @@ export default {
       }
     },
     successfullContribution() {
-      this.makeToast('Successfull Contribution', 'Thanks for contributing!', 'success');
+      this.makeToast(
+        "Successfull Contribution",
+        "Thanks for contributing!",
+        "success"
+      );
       this.show_overlay = false;
     },
     invalidContribution() {
-      this.makeToast('Invalid Contribution', 'Sorry we already have this sujiko or it has some error :(', 'danger');
+      this.makeToast(
+        "Invalid Contribution",
+        "Sorry we already have this sujiko or it has some error :(",
+        "danger"
+      );
       this.show_overlay = false;
     },
     wrongAnswer() {
-      this.makeToast('Wrong Answer', 'Nice try, you are almost there!', 'danger');
+      this.makeToast(
+        "Wrong Answer",
+        "Nice try, you are almost there!",
+        "danger"
+      );
       this.show_overlay = false;
     },
     correctAnswer() {
-      this.makeToast('Correct Answer', 'Hey you are good at this!', 'success');
+      this.makeToast("Correct Answer", "Hey you are good at this!", "success");
       this.show_overlay = false;
     },
     makeToast(title, text, variant = null) {
       this.$bvToast.toast(text, {
-        toaster: 'b-toaster-top-center',
+        toaster: "b-toaster-top-center",
         title: title,
         variant: variant,
         solid: true,
-        appendToast: true
+        appendToast: true,
       });
     },
   },
@@ -830,3 +1039,6 @@ export default {
   min-height: 100vh;
 }
 </style>
+
+
+
