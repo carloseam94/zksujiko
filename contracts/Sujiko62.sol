@@ -35,11 +35,11 @@ contract Sujiko62 is ERC721URIStorage {
     sujiko62Struct[32] sujikos;
 
     // Black svg with white text over it
-    string svg1 = '<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="fill:#fff;font-family:sans;font-size:30px">';
+    string svg1 = '<svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" style="fill:#fff;font-family:sans;font-size:20px">';
     string svg2 = "</text></svg>";
 
     // Constructor following ERC721 protocol (name and symbol)
-    constructor(address _verifierAddr) ERC721("Sujiko62", "SUJIKO62") {
+    constructor(address _verifierAddr) ERC721("Sujiko62", "ZKSUJIKO62") {
         verifierAddr = _verifierAddr;
         limitSujikos = 32;
         sujikos[sujikosCounter.current()] = sujiko62Struct([uint256(1), 0, 0, 0, 5, 0],[uint256(10), 15], [[uint256(1),1,1,1,0,0],[uint256(0),0,0,1,1,1]]);
@@ -84,6 +84,7 @@ contract Sujiko62 is ERC721URIStorage {
         require(verifyProof(a, b, c, input), "Error in verify proof");
         require(isNewSujiko62(input), "Error: Sujiko62 already exist");
         require(contributeWithSujiko62(input));
+        mintNFT();
         return true;
     }
 
@@ -130,16 +131,16 @@ contract Sujiko62 is ERC721URIStorage {
         return true;
     }
 
-    function mintNFT(address personAddress) public {
+    function mintNFT() private {
 
-        uint256 newItemId = _tokenIds.current();
-        string memory svg3 = string(abi.encodePacked(svg1, "Thanks for the contribution!", svg2));
+        uint256 newItemId = sujikosCounter.current();
+        string memory svg3 = string(abi.encodePacked(svg1, "Thanks for the contribution! (Sujiko62 #", newItemId.toString(), ")", svg2));
         string memory json = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
-                        '{"name": "', "Sujiko Contribuitor",
-                        '", "description": "This NFT certifies that you have contributed with your own Sujiko", "image": "data:image/svg+xml;base64,',
+                        '{"name": "', "Sujiko62 Contribution",
+                        '", "description": "This NFT certifies that you have contributed with your own Sujiko62", "image": "data:image/svg+xml;base64,',
                         Base64.encode(bytes(svg3)),
                         '"}'
                     )
@@ -149,10 +150,8 @@ contract Sujiko62 is ERC721URIStorage {
 
         string memory tokenUri = string(abi.encodePacked("data:application/json;base64,", json));
         
-        _safeMint(personAddress, newItemId);
+        _safeMint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenUri);
 
-        _tokenIds.increment();
-        console.log("An NFT w/ ID %s has been minted to %s", newItemId, personAddress);
     }
 }
