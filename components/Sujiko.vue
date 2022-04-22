@@ -447,6 +447,9 @@ export default {
 
           if (response) {
             this.successfullContribution();
+            // setTimeout(() => {
+            //   this.loadNextSujiko();
+            // }, 10000);
           } else {
             this.invalidContribution();
           }
@@ -1015,7 +1018,7 @@ export default {
     successfullContribution() {
       this.makeToast(
         "Successfull Contribution",
-        "Thanks for contributing!",
+        "Thanks for contributing! An NFT has been minted to your address.",
         "success"
       );
       this.show_overlay = false;
