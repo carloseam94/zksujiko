@@ -26,6 +26,7 @@
               title="Previous Sujiko"
               ><b-icon icon="arrow-left" aria-label="arrow-left"></b-icon
             ></b-button>
+            <b-button variant="primary" size="sm" title="Reload Sujiko" @click="loadNewSujiko"><b-icon icon="arrow-clockwise"></b-icon></b-button>
             <b-button
               variant="primary"
               size="sm"
