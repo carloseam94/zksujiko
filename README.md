@@ -2,7 +2,7 @@
 
 <img src="./static/demo.png" width="600">
 
-## Live demo
+## Live Demo
 You can check out a live demo [here](https://zksujiko.netlify.app).
 
 ## Build Setup
@@ -41,7 +41,7 @@ Contains the file DeployedContracts.json, which contains the addresses of both s
 
 ## zkutils
 
-Contains 3 .js files (sujiko_prover.js, sujiko62_prover.js and zkproof.js) these are the core of zk-proofs generation and validation process.
+Contains 3 .js files (sujiko_prover.js, sujiko62_prover.js and zkproof.js) they are the core of the zk-proof generation and validation process.
 
 ## Remaining folders and files
 
