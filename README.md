@@ -2,6 +2,9 @@
 
 <img src="./static/demo.png" width="600">
 
+## Live demo
+You can check out a live demo [here](https://zksujiko.netlify.app).
+
 ## Build Setup
 
 ```bash
@@ -15,7 +18,7 @@ $ yarn dev
 
 ## circuits
 
-Circuits folder contains 2 .circom files (sujiko.circom and sujiko62.circom) and a folder (circomlibs) with the circuits they uses as dependencies. These files are used to generate their respectives .wasm files (sujiko.wasm and sujiko62.wasm) and .zkey files (sujiko_0001.zkey and sujiko62_0001.zkey) also two solidity contracts (SujikoVerifier.sol and Sujiko62Verifier.sol).
+Circuits folder contains 2 .circom files (sujiko.circom and sujiko62.circom) and a folder (circomlibs) with the circuits they use as dependencies. These files are used to generate their respectives .wasm files (sujiko.wasm and sujiko62.wasm) and .zkey files (sujiko_0001.zkey and sujiko62_0001.zkey) also two solidity contracts (SujikoVerifier.sol and Sujiko62Verifier.sol).
 
 ### Both circuits validates the following conditions (for their corresponding type of sujiko)
 
