@@ -191,7 +191,7 @@
   </div>
 </template>
 <script>
-import { ethers, providers } from "ethers";
+import { ethers } from "ethers";
 import Sujiko from "../utils/Sujiko.json";
 import Sujiko62 from "../utils/Sujiko62.json";
 import deployed_contracts from "../utils/DeployedContracts.json";
@@ -220,6 +220,21 @@ export default {
     };
   },
   methods: {
+    async switchToHarmonyTestnet() {
+       await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+            chainId: "0x6357D2E0",
+            rpcUrls: ["https://api.s0.b.hmny.io"],
+            chainName: "Harmony Testnet",
+            nativeCurrency: {
+                name: "one",
+                symbol: "one"
+            },
+            blockExplorerUrls: ["https://explorer.pops.one/"]
+          }]
+        });
+    },
     async changeMode() {
       if (this.MODE === "SUJIKO") {
         this.MODE = "SUJIKO62";
@@ -240,6 +255,8 @@ export default {
 
       if (!ethereum) {
         console.log("Make sure you have metamask!");
+        await this.loadNewSujiko(0);
+        this.show_overlay = false;
         return;
       } else {
         console.log("We have the ethereum object", ethereum);
@@ -247,9 +264,15 @@ export default {
 
       const accounts = await ethereum.request({ method: "eth_accounts" });
 
+      await this.switchToHarmonyTestnet();
+      await this.loadNewSujiko(0);
+      this.show_overlay = false;
+
       if (accounts.length !== 0) {
+        
         this.account = accounts[0];
         this.walletConnected = true;
+
         console.log("Found an authorized account:", this.account);
       } else {
         console.log("No authorized account found");
@@ -264,6 +287,8 @@ export default {
           return;
         }
 
+        await this.switchToHarmonyTestnet();
+
         const accounts = await ethereum.request({
           method: "eth_requestAccounts",
         });
@@ -271,7 +296,7 @@ export default {
         console.log("Connected", accounts[0]);
         this.account = accounts[0];
         this.walletConnected = true;
-        this.loadNewSujiko(0);
+        await this.loadNewSujiko(0);
         this.show_overlay = false;
       } catch (error) {
         console.log(error);
@@ -1055,8 +1080,6 @@ export default {
   },
   mounted() {
     this.checkIfWalletIsConnected();
-    this.loadNewSujiko(0);
-    this.show_overlay = false;
   },
 };
 </script>
