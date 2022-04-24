@@ -69,7 +69,7 @@
               size="sm"
               @click="contribute"
               :disabled="contributing || !walletConnected"
-              >Contribute</b-button
+              >Create New Sujiko</b-button
             >
             <b-button
               variant="primary"
@@ -88,7 +88,7 @@
               v-if="!walletConnected"
               @click="connectWallet"
             >
-              Connect Wallet to Contribute
+              Connect Wallet to Create and upload your own Sujiko
             </b-button>
           </div>
         </div>

@@ -1,4 +1,9 @@
-# sujiko-front
+# zkSujiko
+
+<img src="./static/demo.png" width="600">
+
+## Live Demo
+You can check out a live demo [here](https://zksujiko.netlify.app).
 
 ## Build Setup
 
@@ -9,61 +14,36 @@ $ yarn install
 # serve with hot reload at localhost:3000
 $ yarn dev
 
-# build for production and launch server
-$ yarn build
-$ yarn start
-
-# generate static project
-$ yarn generate
 ```
 
-For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
+## circuits
 
-## Special Directories
+Circuits folder contains 2 .circom files (sujiko.circom and sujiko62.circom) and a folder (circomlibs) with the circuits they use as dependencies. These files are used to generate their respectives .wasm files (sujiko.wasm and sujiko62.wasm) and .zkey files (sujiko_0001.zkey and sujiko62_0001.zkey) also two solidity contracts (SujikoVerifier.sol and Sujiko62Verifier.sol).
 
-You can create the following extra directories, some of which have special behaviors. Only `pages` is required; you can delete them if you don't want to use their functionality.
+### Both circuits validates the following conditions (for their corresponding type of sujiko)
 
-### `assets`
+* The submited solution comes from the provided sujiko.
+* All the numbers of the squares are between 1 and n. (n is the number of squares of the sujiko)
+* All the numbers of the squares are unique.
+* All the numbers of the circles are equal to the sum of all the numbers in their adjacent squares.
 
-The assets directory contains your uncompiled assets such as Stylus or Sass files, images, or fonts.
+## static
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/assets).
+This folder contains the previously generated .wasm and .zkey files.
 
-### `components`
+## contracts
 
-The components directory contains your Vue.js components. Components make up the different parts of your page and can be reused and imported into your pages, layouts and even other components.
+Contracts folder contains 4 .sol files (Sujiko.sol, SujikoVerifier.sol, Sujiko62.sol and Sujiko62Verifier.sol)
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/components).
+## utils
 
-### `layouts`
+Contains the file DeployedContracts.json, which contains the addresses of both solidity contracts Sujiko.sol and Sujiko62.sol in the Harmony Testnet. Also 2 ABI files for these contracts (Sujiko.json and Sujiko62.json).
 
-Layouts are a great help when you want to change the look and feel of your Nuxt app, whether you want to include a sidebar or have distinct layouts for mobile and desktop.
+## zkutils
 
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/layouts).
+Contains 3 .js files (sujiko_prover.js, sujiko62_prover.js and zkproof.js) they are the core of the zk-proof generation and validation process.
 
+## Remaining folders and files
 
-### `pages`
-
-This directory contains your application views and routes. Nuxt will read all the `*.vue` files inside this directory and setup Vue Router automatically.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/get-started/routing).
-
-### `plugins`
-
-The plugins directory contains JavaScript plugins that you want to run before instantiating the root Vue.js Application. This is the place to add Vue plugins and to inject functions or constants. Every time you need to use `Vue.use()`, you should create a file in `plugins/` and add its path to plugins in `nuxt.config.js`.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/plugins).
-
-### `static`
-
-This directory contains your static files. Each file inside this directory is mapped to `/`.
-
-Example: `/static/robots.txt` is mapped as `/robots.txt`.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/static).
-
-### `store`
-
-This directory contains your Vuex store files. Creating a file in this directory automatically activates Vuex.
-
-More information about the usage of this directory in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/store).
+They are specifically related to Nuxt and the front-end of the application.
+More information in [the documentation](https://nuxtjs.org/docs/2.x/directory-structure/).
