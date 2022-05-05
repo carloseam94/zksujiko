@@ -236,6 +236,21 @@ export default {
           }]
         });
     },
+    async switchToHarmonyMainnet() {
+       await ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [{
+            chainId: "0x63564C40",
+            rpcUrls: ["https://api.harmony.one"],
+            chainName: "Harmony Mainnet",
+            nativeCurrency: {
+                name: "one",
+                symbol: "one"
+            },
+            blockExplorerUrls: ["https://explorer.harmony.one"]
+          }]
+        });
+    },
     async changeMode() {
       if (this.MODE === "SUJIKO") {
         this.MODE = "SUJIKO62";
@@ -265,7 +280,7 @@ export default {
 
       const accounts = await ethereum.request({ method: "eth_accounts" });
 
-      await this.switchToHarmonyTestnet();
+      await this.switchToHarmonyMainnet();
       await this.loadNewSujiko(0);
       this.show_overlay = false;
 
@@ -288,7 +303,7 @@ export default {
           return;
         }
 
-        await this.switchToHarmonyTestnet();
+        await this.switchToHarmonyMainnet();
 
         const accounts = await ethereum.request({
           method: "eth_requestAccounts",
