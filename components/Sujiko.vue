@@ -362,7 +362,7 @@ export default {
           }
         } else {
           signer = ethers.providers.getDefaultProvider(
-            "https://api.s0.b.hmny.io"
+            "https://api.harmony.one"
           );
         }
 
@@ -615,7 +615,7 @@ export default {
           }
         } else {
           signer = ethers.providers.getDefaultProvider(
-            "https://api.s0.b.hmny.io"
+            "https://api.harmony.one"
           );
         }
 
